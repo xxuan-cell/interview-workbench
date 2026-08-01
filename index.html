@@ -35,6 +35,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue'
 .tag-blue{background:#E3F2FD;color:#1565C0}
 .tag-green{background:#E8F5E9;color:#2E7D32}
 .tag-orange{background:#FFF3E0;color:#E65100}
+.tag-red{background:#FEE2E2;color:#DC2626}
+.tag-purple{background:#F3E5F5;color:#7B1FA2}
 .body-text{font-size:13px;color:var(--text-sub);line-height:1.8}
 .body-text strong{color:var(--text-main);font-weight:600}
 .highlight-box{background:#F0F4FF;border-left:3px solid var(--info);padding:10px 12px;border-radius:0 8px 8px 0;font-size:13px;color:var(--text-sub);margin:8px 0}
@@ -133,6 +135,19 @@ body.edit-mode .collapsible.user-added .collapsible-header::after{content:'🗑�
 .jd-card .card-title{display:flex;justify-content:space-between;align-items:center}
 .jd-card .card-title span{font-size:11px;color:var(--text-light);font-weight:400}
 
+/* JD分析结果 */
+.jd-analysis{background:#F0F9FF;border:1px solid #BAE6FD;border-radius:12px;padding:14px;margin-top:12px}
+.jd-analysis-title{font-size:14px;font-weight:700;color:#0369A1;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.jd-match-score{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.jd-score-bar{flex:1;height:8px;background:#E0F2FE;border-radius:4px;overflow:hidden}
+.jd-score-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--primary));border-radius:4px;transition:width .5s}
+.jd-score-text{font-size:18px;font-weight:700;color:var(--accent);min-width:48px;text-align:right}
+.jd-analysis-section{margin-bottom:12px}
+.jd-analysis-section-title{font-size:12px;font-weight:700;color:#0369A1;margin-bottom:6px}
+.jd-analysis-section ul{margin:0;padding-left:16px;font-size:12px;color:var(--text-sub);line-height:1.8}
+.jd-analysis-section li{margin-bottom:4px}
+.jd-script{background:#FFF8E1;border-left:3px solid var(--primary);padding:10px 12px;border-radius:0 8px 8px 0;font-size:12px;color:var(--text-sub);line-height:1.8}
+
 /* 历史记录 */
 .history-panel{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:250;justify-content:center;align-items:flex-end}
 .history-panel.show{display:flex}
@@ -144,10 +159,13 @@ body.edit-mode .collapsible.user-added .collapsible-header::after{content:'🗑�
 .history-item .hi-detail{color:var(--text-sub);word-break:break-all}
 .history-empty{text-align:center;color:var(--text-light);padding:30px;font-size:13px}
 
-/* 项目删除按钮 */
 .proj-delete-btn{display:none;font-size:12px;background:#FEE2E2;color:#DC2626;border:none;padding:4px 10px;border-radius:12px;cursor:pointer;margin-left:8px}
 body.edit-mode .proj-delete-btn{display:inline-block}
 body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4px}
+
+/* 分析按钮 */
+.analyze-btn{background:linear-gradient(135deg,var(--accent),#FF8A50);color:white;border:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.analyze-btn:disabled{opacity:.6;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -187,7 +205,7 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
       <div class="timeline-date">更早 | 2.5年</div>
       <div class="timeline-title">卖家端客服中心 · Coach</div>
       <div class="timeline-company">亚马逊</div>
-      <div class="body-text editable" data-key="overview_amazon">负责一线客服疑难case升级处理、新人实操指导及成熟员工再培训，总结共性问题并优化操作流程、迭代FAQ知识库，与管理者推进标准政策执行。</div>
+      <div class="body-text editable" data-key="overview_amazon">负责一线客服疑难case升级处理、新���实操指导及成熟员工再培训，总结共性问题并优化操作流程、迭代FAQ知识库，与管理者推进标准政策执行。</div>
       <div class="editable-info">点击上方文字编辑</div>
     </div>
   </div>
@@ -282,10 +300,7 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
     </div>
   </div>
 
-  <!-- 用户添加的项目容器 -->
   <div id="userProjects"></div>
-
-  <!-- 添加项目按钮 -->
   <button class="add-btn" onclick="addProject()">➕ 添加新项目</button>
 </div>
 
@@ -327,9 +342,8 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
   <div class="edit-hint">💡 编辑模式已开启，点击任意文字段落即可修改</div>
   <div class="reset-bar"><button onclick="resetAllData()">🔄 恢复全部原始</button></div>
 
-  <!-- JD输入区 -->
   <div class="card jd-input-area">
-    <div class="card-title">✍️ 添加/粘贴意向岗位JD</div>
+    <div class="card-title">🎯 添加意向岗位JD</div>
     <textarea id="jdInput" placeholder="请在此粘贴意向岗位的JD内容…&#10;&#10;例如：&#10;岗位名称：政府事务运营经理&#10;岗位职责：&#10;1. 负责…&#10;2. 负责…&#10;任职要求：&#10;1. 本科及以上学历…&#10;2. 5年以上…"></textarea>
     <div class="jd-save-row">
       <input id="jdTitleInput" placeholder="岗位名称（如：政府事务运营经理）">
@@ -337,15 +351,13 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
     </div>
   </div>
 
-  <!-- 已保存的JD列表 -->
   <div id="jdList"></div>
 
-  <!-- 空态 -->
   <div class="card" id="jdEmpty">
     <div class="jd-empty" style="text-align:center;padding:30px 20px;color:var(--text-light)">
       <div style="font-size:48px;margin-bottom:12px">🎯</div>
       <p>暂无保存的岗位JD</p>
-      <p style="font-size:11px;color:var(--text-light);background:#F8F9FB;padding:10px;border-radius:8px;text-align:left;line-height:1.6">在上方粘贴JD内容并保存后：<br>1. 提取JD核心能力要求<br>2. 与过往工作内容匹配共性<br>3. 生成针对性面试话术</p>
+      <p style="font-size:11px;color:var(--text-light);background:#F8F9FB;padding:10px;border-radius:8px;text-align:left;line-height:1.6">在上方粘贴JD内容并保存后，系统将自动：<br>1. 提取JD核心能力要求<br>2. 与过往工作内容匹配共性<br>3. 生成针对性面试话术</p>
     </div>
   </div>
 </div>
@@ -366,10 +378,7 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
     <div class="toolbar-btn" data-filter="custom">自定义</div>
   </div>
 
-  <div id="qaList">
-    <!-- 预设问题由JS动态生成 -->
-  </div>
-
+  <div id="qaList"></div>
   <button class="add-btn" onclick="addQuestion()">➕ 添加新问题</button>
 </div>
 
@@ -395,7 +404,7 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
 <!-- ===== 添加问题弹窗 ===== -->
 <div class="add-overlay" id="addQOverlay">
   <div class="panel"><h3>➕ 添加面试问题</h3>
-    <input id="addQTitle" placeholder="问题内容（如：请描述一次跨部门冲突的处理经验）">
+    <input id="addQTitle" placeholder="问题内容">
     <select id="addQCat"><option value="intro">自我介绍类</option><option value="project">项目经验类</option><option value="ability">能力素养类</option><option value="career">职业发展类</option><option value="custom">自定义类</option></select>
     <textarea id="addQAnswer" placeholder="参考答案（选填）"></textarea>
     <textarea id="addQThought" placeholder="答题思路（选填）"></textarea>
@@ -409,7 +418,7 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
 <!-- ===== 添加项目弹窗 ===== -->
 <div class="add-overlay" id="addProjOverlay">
   <div class="panel"><h3>➕ 添加新项目</h3>
-    <input id="addProjTitle" placeholder="项目名称（如：XXX活动统筹）">
+    <input id="addProjTitle" placeholder="项目名称">
     <textarea id="addProjBg" placeholder="项目背景"></textarea>
     <textarea id="addProjRole" placeholder="角色与职责"></textarea>
     <textarea id="addProjProcess" placeholder="执行过程"></textarea>
@@ -452,6 +461,36 @@ let userProjects = [];
 let userJDs = [];
 let editHistory = [];
 let historyFilter = 'all';
+
+// ============ 关键词库与能力标签 ============
+const JD_KEYWORDS = {
+  '质检': ['质量管控', '质检', '客服质检', '抽检', '质检标准'],
+  '客服': ['客服', '客户服务', '客户支持', '一线客服'],
+  '培训': ['培训', '赋能', '新人培训', '岗中培训', '课件'],
+  '流程优化': ['流程优化', 'SOP', '标准流程', '流程建设', '优化流程'],
+  '数据分析': ['数据分析', '报表分析', '数据复盘', 'Excel', 'PPT'],
+  '跨部门协作': ['跨部门', '沟通协调', '协同', '内部协调'],
+  '供应商管理': ['供应商', '采购', '招标', '合同'],
+  '活动统筹': ['活动', '展会', '招商会', '统筹', '执行'],
+  '项目管理': ['项目管理', 'PM', '进度管理', '风险管理'],
+  '内容运营': ['内容运营', '公众号', '推送', '阅读率'],
+  '政府关系': ['政府', '政企', '公共事务', 'GA'],
+  '案例库': ['案例库', '案例分析', '知识库', 'FAQ'],
+  '疑难处理': ['疑难', '升级', '投诉处理', '售后'],
+  '团队管理': ['团队', '管理', '带人', '负责人'],
+  '文档沉淀': ['文档', '沉淀', '手册', 'checklist']
+};
+
+// 各项目原始标签（用于匹配）
+const PROJECT_TAGS = {
+  p1: ['活动统筹', '项目管理', '供应商管理', '跨部门协作', '政府关系'],
+  p2: ['活动统筹', '供应商管理', '政府关系', '跨部门协作'],
+  p3: ['数据分析', '跨部门协作', '内容运营'],
+  p4: ['流程优化', '跨部门协作', '文档沉淀'],
+  p5: ['供应商管理'],
+  p6: ['内容运营'],
+  p7: ['质检', '客服', '培训', '流程优化', '案例分析', '疑难处理']
+};
 
 // ============ 预设面试问题 ============
 const presetQuestions = [
@@ -496,75 +535,41 @@ const presetQuestions = [
 // ============ 历史记录 ============
 function addHistory(action, detail) {
   const now = new Date();
-  const ts = now.getFullYear()+'-'+
-    String(now.getMonth()+1).padStart(2,'0')+'-'+
-    String(now.getDate()).padStart(2,'0')+' '+
-    String(now.getHours()).padStart(2,'0')+':'+
-    String(now.getMinutes()).padStart(2,'0')+':'+
-    String(now.getSeconds()).padStart(2,'0');
+  const ts = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+' '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0');
   editHistory.unshift({time:ts, action, detail, id:Date.now()});
   if (editHistory.length > 200) editHistory.length = 200;
   saveToStorage('history', editHistory);
 }
-
-function showHistory() {
-  document.getElementById('historyPanel').classList.add('show');
-  renderHistory();
-}
-
-function closeHistory() {
-  document.getElementById('historyPanel').classList.remove('show');
-}
-
+function showHistory() { document.getElementById('historyPanel').classList.add('show'); renderHistory(); }
+function closeHistory() { document.getElementById('historyPanel').classList.remove('show'); }
 function filterHistory(type, btn) {
   historyFilter = type;
   document.querySelectorAll('#historyPanel .toolbar-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   renderHistory();
 }
-
 function renderHistory() {
   const list = document.getElementById('historyList');
   const filtered = historyFilter === 'all' ? editHistory : editHistory.filter(h => h.action.includes(historyFilter));
-  if (filtered.length === 0) {
-    list.innerHTML = '<div class="history-empty">暂无记录</div>';
-    return;
-  }
-  list.innerHTML = filtered.map(h => 
-    `<div class="history-item"><div class="hi-time">${h.time}</div><span class="hi-action">${h.action}</span><div class="hi-detail">${h.detail}</div></div>`
-  ).join('');
+  if (filtered.length === 0) { list.innerHTML = '<div class="history-empty">暂无记录</div>'; return; }
+  list.innerHTML = filtered.map(h => '<div class="history-item"><div class="hi-time">'+h.time+'</div><span class="hi-action">'+h.action+'</span><div class="hi-detail">'+h.detail+'</div></div>').join('');
 }
-
 function clearHistory() {
   if (confirm('确定清空所有历史记录吗？')) {
-    editHistory = [];
-    saveToStorage('history', []);
-    renderHistory();
-    showToast('历史已清空');
+    editHistory = []; saveToStorage('history', []); renderHistory(); showToast('历史已清空');
   }
 }
 
 // ============ 存储 ============
-function saveToStorage(key, val) {
-  try { localStorage.setItem('iw_'+key, JSON.stringify(val)); } catch(e) {}
-}
-function loadFromStorage(key, def) {
-  try { const v = localStorage.getItem('iw_'+key); return v ? JSON.parse(v) : def; } catch(e) { return def; }
-}
+function saveToStorage(key, val) { try { localStorage.setItem('iw_'+key, JSON.stringify(val)); } catch(e) {} }
+function loadFromStorage(key, def) { try { const v = localStorage.getItem('iw_'+key); return v ? JSON.parse(v) : def; } catch(e) { return def; } }
 
 // ============ 编辑模式 ============
 function toggleEditMode() {
   editMode = !editMode;
   const btn = document.getElementById('editToggle');
-  if (editMode) {
-    document.body.classList.add('edit-mode');
-    btn.textContent = '✅ 完成';
-    btn.classList.add('active');
-  } else {
-    document.body.classList.remove('edit-mode');
-    btn.textContent = '✏️ 编辑';
-    btn.classList.remove('active');
-  }
+  if (editMode) { document.body.classList.add('edit-mode'); btn.textContent = '✅ 完成'; btn.classList.add('active'); }
+  else { document.body.classList.remove('edit-mode'); btn.textContent = '✏️ 编辑'; btn.classList.remove('active'); }
 }
 
 // ============ 编辑弹窗 ============
@@ -574,8 +579,7 @@ document.addEventListener('click', function(e) {
   if (!el) return;
   const key = el.dataset.key;
   if (!key) return;
-  currentEditKey = key;
-  currentEditEl = el;
+  currentEditKey = key; currentEditEl = el;
   const saved = localStorage.getItem('iw_'+key);
   document.getElementById('editTextarea').value = saved !== null ? saved : (el.getAttribute('data-original') || el.innerHTML).replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '');
   document.getElementById('editTitle').textContent = '编辑：' + (el.textContent || '').substring(0, 30) + '...';
@@ -583,23 +587,15 @@ document.addEventListener('click', function(e) {
   setTimeout(() => document.getElementById('editTextarea').focus(), 200);
 });
 document.getElementById('editOverlay').addEventListener('click', function(e) { if (e.target === this) closeEdit(); });
-
-function closeEdit() {
-  document.getElementById('editOverlay').classList.remove('show');
-  currentEditKey = null; currentEditEl = null;
-}
-
+function closeEdit() { document.getElementById('editOverlay').classList.remove('show'); currentEditKey = null; currentEditEl = null; }
 function saveEdit() {
   if (!currentEditKey || !currentEditEl) return;
-  const oldVal = (currentEditEl.getAttribute('data-original') || currentEditEl.innerHTML).substring(0, 50);
   const val = document.getElementById('editTextarea').value;
   localStorage.setItem('iw_'+currentEditKey, val);
   currentEditEl.innerHTML = val.replace(/\n/g, '<br>');
   addHistory('编辑', '修改了「'+(currentEditEl.textContent||'').substring(0,30)+'」');
-  closeEdit();
-  showToast('已保存 ✅');
+  closeEdit(); showToast('已保存 ✅');
 }
-
 function resetOneField() {
   if (!currentEditKey || !currentEditEl) return;
   localStorage.removeItem('iw_'+currentEditKey);
@@ -607,17 +603,12 @@ function resetOneField() {
   document.getElementById('editTextarea').value = orig.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '');
   currentEditEl.innerHTML = orig;
   addHistory('恢复', '恢复了「'+(currentEditEl.textContent||'').substring(0,30)+'」');
-  closeEdit();
-  showToast('已恢复 ✅');
+  closeEdit(); showToast('已恢复 ✅');
 }
-
 function resetAllData() {
   if (confirm('确定恢复全部原始内容吗？你修改过的文字、添加的问题/项目/JD都会被清空。')) {
     const keys = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      if (k && k.startsWith('iw_')) keys.push(k);
-    }
+    for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith('iw_')) keys.push(k); }
     keys.forEach(k => localStorage.removeItem(k));
     userQuestions = []; userProjects = []; userJDs = []; editHistory = [];
     location.reload();
@@ -660,210 +651,316 @@ function showToast(msg) {
 function renderAllQuestions() {
   const all = [...presetQuestions, ...userQuestions.map((q,i) => ({...q, id:'uq_'+i, userAdded:true}))];
   const container = document.getElementById('qaList');
-  container.innerHTML = all.map((q, idx) => `
-    <div class="q-card${q.userAdded?' user-added':''}" data-cat="${q.cat}" data-qid="${q.id}">
-      <div class="q-header">
-        <div class="q-num">${idx+1}</div>
-        <div style="flex:1">
-          <div class="q-title editable" data-key="${q.id}_title">${q.title}</div>
-          <div class="q-tags">
-            <span class="tag tag-blue">${catLabel(q.cat)}</span>
-            ${q.userAdded?'<span class="tag tag-green">自定义</span>':''}
-          </div>
-        </div>
-        ${q.userAdded ? '<div class="q-delete" onclick="event.stopPropagation();deleteQuestion(\''+q.id+'\')">🗑️</div>' : ''}
-      </div>
-      <div class="q-body">
-        <div class="q-section-label">参考答案</div>
-        <div class="q-answer editable" data-key="${q.id}_answer">${q.answer||'（待补充）'}</div>
-        <div class="q-section-label">答题思路</div>
-        <div class="q-thought editable" data-key="${q.id}_thought">${q.thought||'（待补充）'}</div>
-      </div>
-    </div>
-  `).join('');
-  initEditable();
-  applyQFilter();
+  container.innerHTML = all.map((q, idx) => '<div class="q-card'+(q.userAdded?' user-added':'')+'" data-cat="'+q.cat+'" data-qid="'+q.id+'"><div class="q-header"><div class="q-num">'+(idx+1)+'</div><div style="flex:1"><div class="q-title editable" data-key="'+q.id+'_title">'+q.title+'</div><div class="q-tags"><span class="tag tag-blue">'+catLabel(q.cat)+'</span>'+(q.userAdded?'<span class="tag tag-green">自定义</span>':'')+'</div></div>'+(q.userAdded?'<div class="q-delete" onclick="event.stopPropagation();deleteQuestion(\''+q.id+'\')">🗑️</div>':'')+'</div><div class="q-body"><div class="q-section-label">参考答案</div><div class="q-answer editable" data-key="'+q.id+'_answer">'+(q.answer||'（待补充）')+'</div><div class="q-section-label">答题思路</div><div class="q-thought editable" data-key="'+q.id+'_thought">'+(q.thought||'（待补充）')+'</div></div></div>').join('');
+  initEditable(); applyQFilter();
 }
-
-function catLabel(cat) {
-  const m = {intro:'自我介绍',project:'项目经验',ability:'能力素养',career:'职业发展',custom:'自定义'};
-  return m[cat] || cat;
-}
-
+function catLabel(cat) { const m = {intro:'自我介绍',project:'项目经验',ability:'能力素养',career:'职业发展',custom:'自定义'}; return m[cat] || cat; }
 function applyQFilter() {
   const active = document.querySelector('#qaFilter .toolbar-btn.active');
   const f = active ? active.dataset.filter : 'all';
-  document.querySelectorAll('#qaList .q-card').forEach(c => {
-    c.style.display = (f === 'all' || c.dataset.cat === f) ? '' : 'none';
-  });
+  document.querySelectorAll('#qaList .q-card').forEach(c => { c.style.display = (f === 'all' || c.dataset.cat === f) ? '' : 'none'; });
 }
-
-function addQuestion() {
-  document.getElementById('addQOverlay').classList.add('show');
-  document.getElementById('addQTitle').value = '';
-  document.getElementById('addQAnswer').value = '';
-  document.getElementById('addQThought').value = '';
-  document.getElementById('addQCat').value = 'project';
-}
+function addQuestion() { document.getElementById('addQOverlay').classList.add('show'); document.getElementById('addQTitle').value=''; document.getElementById('addQAnswer').value=''; document.getElementById('addQThought').value=''; document.getElementById('addQCat').value='project'; }
 function closeAddQ() { document.getElementById('addQOverlay').classList.remove('show'); }
-
 function saveNewQuestion() {
   const title = document.getElementById('addQTitle').value.trim();
   if (!title) { showToast('请输入问题内容'); return; }
-  const q = {
-    title, cat: document.getElementById('addQCat').value,
-    answer: document.getElementById('addQAnswer').value.trim(),
-    thought: document.getElementById('addQThought').value.trim()
-  };
-  userQuestions.push(q);
-  saveToStorage('questions', userQuestions);
+  const q = {title, cat: document.getElementById('addQCat').value, answer: document.getElementById('addQAnswer').value.trim(), thought: document.getElementById('addQThought').value.trim()};
+  userQuestions.push(q); saveToStorage('questions', userQuestions);
   addHistory('添加问题', '添加了面试问题「'+title.substring(0,30)+'」');
-  renderAllQuestions();
-  closeAddQ();
-  showToast('问题已添加 ✅');
+  renderAllQuestions(); closeAddQ(); showToast('问题已添加 ✅');
 }
-
 function deleteQuestion(qid) {
   if (!editMode) return;
   const idx = parseInt(qid.replace('uq_',''));
   if (idx >= 0 && idx < userQuestions.length) {
     const title = userQuestions[idx].title;
     if (confirm('确定删除问题「'+title.substring(0,30)+'」吗？')) {
-      userQuestions.splice(idx, 1);
-      saveToStorage('questions', userQuestions);
+      userQuestions.splice(idx, 1); saveToStorage('questions', userQuestions);
       addHistory('删除问题', '删除了「'+title.substring(0,30)+'」');
-      renderAllQuestions();
-      showToast('已删除');
+      renderAllQuestions(); showToast('已删除');
     }
   }
 }
-
-// QA筛选
 document.querySelectorAll('#qaFilter .toolbar-btn').forEach(b => b.addEventListener('click', function() {
-  document.querySelectorAll('#qaFilter .toolbar-btn').forEach(x => x.classList.remove('active'));
-  this.classList.add('active');
-  applyQFilter();
+  document.querySelectorAll('#qaFilter .toolbar-btn').forEach(x => x.classList.remove('active')); this.classList.add('active'); applyQFilter();
 }));
 
 // ============ 项目 ============
 function renderUserProjects() {
   const container = document.getElementById('userProjects');
-  container.innerHTML = userProjects.map((p, i) => `
-    <div class="collapsible user-added" data-upid="${i}">
-      <div class="collapsible-header" onclick="toggleCollapse(this)">
-        <span>📋 自定义项目：${p.title||'未命名'}</span>
-        <button class="proj-delete-btn" onclick="event.stopPropagation();deleteProject(${i})">删除</button>
-        <span class="arrow">▶</span>
-      </div>
-      <div class="collapsible-body">
-        ${p.bg ? '<div class="section-label">项目背景</div><div class="body-text editable" data-key="up'+i+'_bg">'+p.bg.replace(/\n/g,'<br>')+'</div>' : ''}
-        ${p.role ? '<div class="section-label">角色与职责</div><div class="body-text editable" data-key="up'+i+'_role">'+p.role.replace(/\n/g,'<br>')+'</div>' : ''}
-        ${p.process ? '<div class="section-label">执行过程</div><div class="body-text editable" data-key="up'+i+'_process">'+p.process.replace(/\n/g,'<br>')+'</div>' : ''}
-        ${p.result ? '<div class="highlight-box editable" data-key="up'+i+'_result">'+p.result.replace(/\n/g,'<br>')+'</div>' : ''}
-      </div>
-    </div>
-  `).join('');
+  container.innerHTML = userProjects.map((p, i) => '<div class="collapsible user-added" data-upid="'+i+'"><div class="collapsible-header" onclick="toggleCollapse(this)"><span>📋 自定义项目：'+(p.title||'未命名')+'</span><button class="proj-delete-btn" onclick="event.stopPropagation();deleteProject('+i+')">删除</button><span class="arrow">▶</span></div><div class="collapsible-body">'+(p.bg?'<div class="section-label">项目背景</div><div class="body-text editable" data-key="up'+i+'_bg">'+p.bg.replace(/\n/g,'<br>')+'</div>':'')+(p.role?'<div class="section-label">角色与职责</div><div class="body-text editable" data-key="up'+i+'_role">'+p.role.replace(/\n/g,'<br>')+'</div>':'')+(p.process?'<div class="section-label">执行过程</div><div class="body-text editable" data-key="up'+i+'_process">'+p.process.replace(/\n/g,'<br>')+'</div>':'')+(p.result?'<div class="highlight-box editable" data-key="up'+i+'_result">'+p.result.replace(/\n/g,'<br>')+'</div>':'')+'</div></div>').join('');
   initEditable();
 }
-
-function addProject() {
-  document.getElementById('addProjOverlay').classList.add('show');
-  ['addProjTitle','addProjBg','addProjRole','addProjProcess','addProjResult'].forEach(id => document.getElementById(id).value = '');
-}
+function addProject() { document.getElementById('addProjOverlay').classList.add('show'); ['addProjTitle','addProjBg','addProjRole','addProjProcess','addProjResult'].forEach(id => document.getElementById(id).value=''); }
 function closeAddProj() { document.getElementById('addProjOverlay').classList.remove('show'); }
-
 function saveNewProject() {
   const title = document.getElementById('addProjTitle').value.trim();
   if (!title) { showToast('请输入项目名称'); return; }
-  const p = {
-    title, bg: document.getElementById('addProjBg').value.trim(),
-    role: document.getElementById('addProjRole').value.trim(),
-    process: document.getElementById('addProjProcess').value.trim(),
-    result: document.getElementById('addProjResult').value.trim()
-  };
-  userProjects.push(p);
-  saveToStorage('projects', userProjects);
+  const p = {title, bg: document.getElementById('addProjBg').value.trim(), role: document.getElementById('addProjRole').value.trim(), process: document.getElementById('addProjProcess').value.trim(), result: document.getElementById('addProjResult').value.trim()};
+  userProjects.push(p); saveToStorage('projects', userProjects);
   addHistory('添加项目', '添加了项目「'+title.substring(0,30)+'」');
-  renderUserProjects();
-  closeAddProj();
-  showToast('项目已添加 ✅');
+  renderUserProjects(); closeAddProj(); showToast('项目已添加 ✅');
 }
-
 function deleteProject(idx) {
   if (!editMode) return;
   const title = userProjects[idx].title;
   if (confirm('确定删除项目「'+title.substring(0,30)+'」吗？')) {
-    userProjects.splice(idx, 1);
-    saveToStorage('projects', userProjects);
+    userProjects.splice(idx, 1); saveToStorage('projects', userProjects);
     addHistory('删除项目', '删除了「'+title.substring(0,30)+'」');
-    renderUserProjects();
-    showToast('已删除');
+    renderUserProjects(); showToast('已删除');
   }
 }
 
-// ============ 岗位JD ============
+// ============ 岗位JD & 智能匹配 ============
 function renderJDs() {
   const container = document.getElementById('jdList');
   const empty = document.getElementById('jdEmpty');
-  if (userJDs.length === 0) {
-    container.innerHTML = '';
-    empty.style.display = '';
-    return;
-  }
+  if (userJDs.length === 0) { container.innerHTML = ''; empty.style.display = ''; return; }
   empty.style.display = 'none';
-  container.innerHTML = userJDs.map((jd, i) => `
-    <div class="card jd-card">
-      <div class="card-title">
-        🎯 ${jd.title||'未命名岗位'}
-        <span>${jd.time||''}</span>
-      </div>
-      <div class="body-text editable" data-key="jd_${i}">${jd.content.replace(/\n/g,'<br>')}</div>
-      <div style="margin-top:10px;display:flex;gap:6px">
-        <button class="tag tag-orange" style="cursor:pointer" onclick="analyzeJD(${i})">🔍 匹配分析</button>
-        <button class="tag" style="cursor:pointer;background:#FEE2E2;color:#DC2626" onclick="deleteJD(${i})">🗑️ 删除</button>
-      </div>
-    </div>
-  `).join('');
+  container.innerHTML = userJDs.map((jd, i) => {
+    const analysisHtml = jd.analysis ? renderJDAnalysisHTML(jd.analysis) : '';
+    return '<div class="card jd-card" data-jdidx="'+i+'"><div class="card-title">🎯 '+(jd.title||'未命名岗位')+'<span>'+(jd.time||'')+'</span></div><div class="body-text editable" data-key="jd_'+i+'">'+jd.content.replace(/\n/g,'<br>')+'</div><div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap"><button class="analyze-btn" onclick="analyzeJD('+i+')">🔍 智能匹配分析</button><button class="tag" style="cursor:pointer;background:#FEE2E2;color:#DC2626" onclick="deleteJD('+i+')">🗑️ 删除</button></div>'+analysisHtml+'</div>';
+  }).join('');
   initEditable();
 }
 
 function saveJD() {
   const content = document.getElementById('jdInput').value.trim();
   if (!content) { showToast('请输入JD内容'); return; }
-  const title = document.getElementById('jdTitleInput').value.trim() || '未命名岗位';
+  const title = document.getElementById('jdTitleInput').value.trim() || extractJDTitle(content);
   const now = new Date();
-  const jd = {
-    title, content,
-    time: now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')
-  };
-  userJDs.push(jd);
-  saveToStorage('jds', userJDs);
+  const jd = {title, content, time: now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')};
+  userJDs.push(jd); saveToStorage('jds', userJDs);
   addHistory('添加JD', '保存了岗位JD「'+title+'」');
-  document.getElementById('jdInput').value = '';
-  document.getElementById('jdTitleInput').value = '';
-  renderJDs();
-  showToast('JD已保存 ✅');
+  document.getElementById('jdInput').value = ''; document.getElementById('jdTitleInput').value = '';
+  renderJDs(); showToast('JD已保存 ✅');
+}
+
+function extractJDTitle(text) {
+  const m = text.match(/岗位名称[：:]\s*(.+)/) || text.match(/职位[：:]\s*(.+)/) || text.match(/^(.+?)(?:\n|$)/);
+  return m ? m[1].trim().substring(0,20) : '未命名岗位';
 }
 
 function deleteJD(idx) {
   if (confirm('确定删除「'+userJDs[idx].title+'」吗？')) {
     const title = userJDs[idx].title;
-    userJDs.splice(idx, 1);
-    saveToStorage('jds', userJDs);
+    userJDs.splice(idx, 1); saveToStorage('jds', userJDs);
     addHistory('删除JD', '删除了「'+title+'」');
-    renderJDs();
-    showToast('已删除');
+    renderJDs(); showToast('已删除');
   }
 }
 
+// 从JD文本中提取关键词
+function extractJDKeywords(text) {
+  const matchedTags = [];
+  const lowered = text.toLowerCase();
+  for (const [tag, keywords] of Object.entries(JD_KEYWORDS)) {
+    for (const kw of keywords) {
+      if (lowered.includes(kw.toLowerCase())) { matchedTags.push(tag); break; }
+    }
+  }
+  return [...new Set(matchedTags)];
+}
+
+// 分析JD
 function analyzeJD(idx) {
-  showToast('请在对话中将此JD发送给我，我帮你做深度匹配分析 📊');
+  const jd = userJDs[idx];
+  if (!jd) return;
+  
+  const jdTags = extractJDKeywords(jd.content);
+  if (jdTags.length === 0) {
+    showToast('未识别到明确的能力关键词，请检查JD内容');
+    return;
+  }
+  
+  // 获取工作经历数据库
+  const projects = buildExperienceDB();
+  
+  // 匹配项目
+  const matched = [];
+  const unmatched = [];
+  projects.forEach(p => {
+    const pTags = p.tags || [];
+    const overlap = pTags.filter(t => jdTags.includes(t));
+    if (overlap.length > 0) {
+      matched.push({...p, overlap, score: overlap.length});
+    } else {
+      unmatched.push(p);
+    }
+  });
+  matched.sort((a,b) => b.score - a.score);
+  
+  // 计算总体匹配度
+  const coverage = Math.round((matched.length / projects.length) * 100);
+  const score = Math.min(95, Math.max(40, Math.round(coverage * 0.8 + (jdTags.length * 5))));
+  
+  // 生成面试话术
+  const script = generateInterviewScript(jd, jdTags, matched, unmatched);
+  
+  // 保存分析结果
+  jd.analysis = {
+    score, jdTags, matched, unmatched, script,
+    timestamp: new Date().toLocaleString()
+  };
+  saveToStorage('jds', userJDs);
+  addHistory('JD分析', '分析了「'+jd.title+'」岗位匹配度');
+  
+  renderJDs();
+  showToast('匹配分析完成 ✅');
+  
+  // 滚动到分析结果
+  setTimeout(() => {
+    const card = document.querySelector('.jd-card[data-jdidx="'+idx+'"] .jd-analysis');
+    if (card) card.scrollIntoView({behavior:'smooth', block:'start'});
+  }, 300);
+}
+
+// 构建工作经历数据库（从DOM中提取当前内容）
+function buildExperienceDB() {
+  const projects = [];
+  // 美团
+  projects.push({
+    title: '美团公共事务部综合运营',
+    company: '美团',
+    period: '2023.01 — 2025.06',
+    tags: ['活动统筹', '项目管理', '供应商管理', '跨部门协作', '政府关系', '内容运营', '数据分析', '流程优化', '文档沉淀'],
+    highlights: ['服贸会美团展区执行总负责人', '4场供应商招商会组织执行', '美团APP主题页搭建投放', '部门运营工具包建设']
+  });
+  // 亚马逊
+  projects.push({
+    title: '亚马逊客服中心Coach',
+    company: '亚马逊',
+    period: '2.5年',
+    tags: ['质检', '客服', '培训', '流程优化', '案例分析', '疑难处理', '数据分析', '文档沉淀'],
+    highlights: ['处理一线客服升级疑难case', '新人实操指导+成熟员工再培训', '总结共性问题优化流程迭代FAQ', '降低错误率与重复进线率']
+  });
+  // 服贸会
+  projects.push({
+    title: '服贸会美团展区活动执行',
+    company: '美团',
+    period: '2023/2025',
+    tags: ['活动统筹', '项目管理', '供应商管理', '跨部门协作', '政府关系'],
+    highlights: ['统筹10余条业务线联合参展', '端到端全流程管理', '沉淀checklist和人员手册SOP']
+  });
+  // 招商会
+  projects.push({
+    title: '美团供应商招商会',
+    company: '美团',
+    period: '2024年4场',
+    tags: ['活动统筹', '供应商管理', '政府关系', '跨部门协作'],
+    highlights: ['每场到场300+供应商', '促成约500家合作', '创新服装臂贴识别方案']
+  });
+  // APP主题页
+  projects.push({
+    title: '美团APP主题页搭建投放',
+    company: '美团',
+    period: '2023-2025',
+    tags: ['数据分析', '跨部门协作', '内容运营'],
+    highlights: ['牵头多条业务线整合促销方案', '投放搜索/猜喜/开屏资源位', '统计PV/UV/成交量复盘']
+  });
+  // 运营工具包
+  projects.push({
+    title: '部门运营工具包建设',
+    company: '美团',
+    period: '2023-2025',
+    tags: ['流程优化', '跨部门协作', '文档沉淀'],
+    highlights: ['沉淀业务协作通讯录', '建立拎包组织流程', '推动成为部门长期工作法']
+  });
+  // 采购
+  projects.push({
+    title: '物资/服务采购管理',
+    company: '美团',
+    period: '2023-2025',
+    tags: ['供应商管理'],
+    highlights: ['独立对接5+核心供应商', '完成合同签订及年度结算']
+  });
+  // 研究院运营
+  projects.push({
+    title: '研究院内部群发号运营',
+    company: '美团',
+    period: '2023-2025',
+    tags: ['内容运营'],
+    highlights: ['内容分层推送', '内部群发号阅读率提升4%']
+  });
+  
+  // 添加用户自定义项目
+  userProjects.forEach((p, i) => {
+    const tags = inferTagsFromText(p.title + ' ' + p.bg + ' ' + p.role + ' ' + p.process + ' ' + p.result);
+    projects.push({
+      title: p.title || '自定义项目'+(i+1),
+      company: '自定义',
+      period: '',
+      tags: tags.length ? tags : ['项目管理'],
+      highlights: [p.role, p.result].filter(Boolean),
+      userAdded: true
+    });
+  });
+  
+  return projects;
+}
+
+// 从文本推断标签
+function inferTagsFromText(text) {
+  if (!text) return [];
+  const tags = [];
+  const lowered = text.toLowerCase();
+  for (const [tag, keywords] of Object.entries(JD_KEYWORDS)) {
+    for (const kw of keywords) {
+      if (lowered.includes(kw.toLowerCase())) { tags.push(tag); break; }
+    }
+  }
+  return [...new Set(tags)];
+}
+
+// 生成面试话术
+function generateInterviewScript(jd, jdTags, matched, unmatched) {
+  const title = jd.title || '该岗位';
+  let script = '针对「'+title+'」岗位，我建议你这样介绍自己：<br><br>';
+  script += '「我看到这个岗位核心要求包括' + jdTags.slice(0,3).join('、') + '，这几点正好和我的经历高度匹配。<br><br>';
+  
+  if (matched.length > 0) {
+    const top = matched.slice(0, 2);
+    script += '第一，我在' + top[0].company + '做过「' + top[0].title + '」，主要锻炼了' + top[0].overlap.join('、') + '能力；';
+    if (top[1]) {
+      script += '第二，我在' + top[1].company + '的「' + top[1].title + '」经历，让我积累了' + top[1].overlap.join('、') + '经验。<br><br>';
+    } else {
+      script += '<br><br>';
+    }
+  }
+  
+  // 针对质检岗位特殊优化
+  if (jdTags.includes('质检') || jdTags.includes('客服')) {
+    script += '特别是亚马逊客服中心Coach的经历，我每天处理一线客服升级的疑难case，通过抽检case、总结共性问题、优化FAQ知识库来降低错误率，这和贵司质检岗位"依据标准抽检、分析问题、优化规则"的核心逻辑完全一致。<br><br>';
+  }
+  
+  // 差距点坦诚说明
+  const gapTags = jdTags.filter(t => !matched.some(m => m.overlap.includes(t)));
+  if (gapTags.length > 0) {
+    script += '需要补充的是，我在' + gapTags.slice(0,2).join('、') + '方面的直接经验相对较少，但我过往的项目管理思维和快速学习能力能让我快速补齐。<br><br>';
+  }
+  
+  script += '所以我认为这个岗位既能发挥我现有的' + (matched.length > 0 ? matched[0].overlap.join('、') : '项目管理和流程优化') + '优势，也能让我在' + title + '领域持续深耕。」';
+  return script;
+}
+
+// 渲染分析结果HTML
+function renderJDAnalysisHTML(a) {
+  if (!a) return '';
+  let matchedHtml = a.matched.length ? a.matched.map(m => '<li><strong>'+m.title+'</strong>：匹配 '+m.overlap.join('、')+'</li>').join('') : '<li>暂无明显匹配项目</li>';
+  let gapHtml = a.unmatched.length ? a.unmatched.slice(0,2).map(m => '<li>'+m.title+'（可补充说明迁移能力）</li>').join('') : '<li>无明显差距</li>';
+  
+  return '<div class="jd-analysis"><div class="jd-analysis-title">📊 智能匹配分析</div>'+
+    '<div class="jd-match-score"><div class="jd-score-bar"><div class="jd-score-fill" style="width:'+a.score+'%"></div></div><div class="jd-score-text">'+a.score+'%</div></div>'+
+    '<div class="jd-analysis-section"><div class="jd-analysis-section-title">🎯 JD核心要求</div><div class="tag-list">'+a.jdTags.map(t => '<span class="tag tag-blue">'+t+'</span>').join('')+'</div></div>'+
+    '<div class="jd-analysis-section"><div class="jd-analysis-section-title">✅ 匹配经历</div><ul>'+matchedHtml+'</ul></div>'+
+    '<div class="jd-analysis-section"><div class="jd-analysis-section-title">⚠️ 需补充的差距</div><ul>'+gapHtml+'</ul></div>'+
+    '<div class="jd-analysis-section"><div class="jd-analysis-section-title">🎤 面试话术建议</div><div class="jd-script editable" data-key="jd_script_'+a.timestamp+'">'+a.script+'</div></div>'+
+    '</div>';
 }
 
 // ============ 历史面板关闭（点击背景） ============
-document.getElementById('historyPanel').addEventListener('click', function(e) {
-  if (e.target === this) closeHistory();
-});
+document.getElementById('historyPanel').addEventListener('click', function(e) { if (e.target === this) closeHistory(); });
 
 // ============ 初始化 ============
 function init() {
