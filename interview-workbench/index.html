@@ -182,6 +182,7 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
 <div class="header">
   <div><h1>面试工作台</h1><p>项目管理思维 · 结构化备战</p></div>
   <div class="header-btns">
+    <button class="hbtn" id="updateBtn" onclick="checkUpdate()">🔄 更新</button>
     <button class="hbtn" onclick="showHistory()">📜 记录</button>
     <button class="hbtn" id="editToggle" onclick="toggleEditMode()">✏️ 编辑</button>
   </div>
@@ -470,6 +471,61 @@ let userProjects = [];
 let userJDs = [];
 let editHistory = [];
 let historyFilter = 'all';
+
+// ============ 版本与在线更新 ============
+const APP_VERSION = '2.0';
+const UPDATE_URL = 'https://cdn.jsdelivr.net/gh/xxuan-cell/interview-workbench@master/index.html';
+const UPDATE_URL_BACKUP = 'https://github.com/xxuan-cell/interview-workbench/raw/master/index.html';
+
+async function checkUpdate() {
+  const btn = document.getElementById('updateBtn');
+  btn.textContent = '⏳ 检查中...';
+  btn.disabled = true;
+  
+  try {
+    // 从CDN获取最新版本号
+    const resp = await fetch(UPDATE_URL + '?t=' + Date.now(), {cache: 'no-store'});
+    if (!resp.ok) throw new Error('CDN不可用，尝试备用源...');
+    const html = await resp.text();
+    const m = html.match(/const APP_VERSION = '([^']+)'/);
+    const remoteVer = m ? m[1] : null;
+    
+    if (!remoteVer) {
+      // 如果没读到版本号，直接对比内容
+      await doUpdate(html);
+      return;
+    }
+    
+    if (remoteVer !== APP_VERSION) {
+      showToast('发现新版本 v' + remoteVer + '，正在更新...');
+      await doUpdate(html);
+    } else {
+      showToast('已是最新版本 v' + APP_VERSION + ' ✅');
+      btn.textContent = '🔄 更新';
+      btn.disabled = false;
+    }
+  } catch(e) {
+    // 备用源
+    try {
+      const resp2 = await fetch(UPDATE_URL_BACKUP + '?t=' + Date.now(), {cache: 'no-store'});
+      if (!resp2.ok) throw e;
+      const html2 = await resp2.text();
+      await doUpdate(html2);
+    } catch(e2) {
+      showToast('更新失败，请稍后重试');
+      btn.textContent = '🔄 更新';
+      btn.disabled = false;
+    }
+  }
+}
+
+async function doUpdate(html) {
+  // 提取新页面的 <script> 内容，但保留 localStorage 数据
+  // 方案：用新HTML完全替换当前页面，localStorage数据不受影响（同一域名）
+  const blob = new Blob([html], {type: 'text/html'});
+  const url = URL.createObjectURL(blob);
+  window.location.replace(url);
+}
 
 // ============ 关键词库与能力标签 ============
 const JD_KEYWORDS = {
