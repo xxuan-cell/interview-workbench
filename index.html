@@ -147,6 +147,15 @@ body.edit-mode .collapsible.user-added .collapsible-header::after{content:'🗑�
 .jd-analysis-section ul{margin:0;padding-left:16px;font-size:12px;color:var(--text-sub);line-height:1.8}
 .jd-analysis-section li{margin-bottom:4px}
 .jd-script{background:#FFF8E1;border-left:3px solid var(--primary);padding:10px 12px;border-radius:0 8px 8px 0;font-size:12px;color:var(--text-sub);line-height:1.8}
+.jd-selfintro{background:linear-gradient(135deg,#EFF6FF 0%,#DBEAFE 100%);border-left:3px solid #3B82F6;padding:12px 14px;border-radius:0 10px 10px 0;font-size:13px;color:var(--text-main);line-height:1.9;margin-bottom:12px}
+.jd-selfintro p{margin-bottom:6px}
+.jd-selfintro .hi-section{font-weight:700;color:#1D4ED8;font-size:12px;margin-bottom:4px;display:flex;align-items:center;gap:4px}
+.jd-suggest-q{margin-bottom:14px;border-bottom:1px dashed var(--border);padding-bottom:12px}
+.jd-suggest-q:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.jd-suggest-q .sq-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--secondary);color:var(--primary);font-size:11px;font-weight:700;margin-right:8px;flex-shrink:0}
+.jd-suggest-q .sq-title{font-size:13px;font-weight:600;color:var(--text-main);margin-bottom:6px;display:flex;align-items:flex-start}
+.jd-suggest-q .sq-hint{font-size:11px;color:var(--text-light);line-height:1.7;background:#F8F9FB;padding:8px 10px;border-radius:6px;margin-top:4px}
+.jd-suggest-q .sq-hint strong{color:var(--accent)}
 
 /* 历史记录 */
 .history-panel{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:250;justify-content:center;align-items:flex-end}
@@ -798,9 +807,15 @@ function analyzeJD(idx) {
   // 生成面试话术
   const script = generateInterviewScript(jd, jdTags, matched, unmatched);
   
+  // 生成详细自我介绍
+  const selfIntro = generateSelfIntro(jd, jdTags, matched);
+  
+  // 生成面试问题建议
+  const suggestedQuestions = generateSuggestedQuestions(jd, jdTags, matched, unmatched);
+  
   // 保存分析结果
   jd.analysis = {
-    score, jdTags, matched, unmatched, script,
+    score, jdTags, matched, unmatched, script, selfIntro, suggestedQuestions,
     timestamp: new Date().toLocaleString()
   };
   saveToStorage('jds', userJDs);
@@ -944,11 +959,155 @@ function generateInterviewScript(jd, jdTags, matched, unmatched) {
   return script;
 }
 
+// 生成详细自我介绍（2分钟版）
+function generateSelfIntro(jd, jdTags, matched) {
+  const title = jd.title || '该岗位';
+  let intro = '';
+  
+  // 开场：我是谁
+  intro += '<p><span class="hi-section">👋 开场（10秒）</span>';
+  intro += '面试官好，我叫XX，有6年互联网运营经验，先后在美团公共事务部和亚马逊客服中心工作过。今天想结合这个' + title + '岗位的要求，聊聊我的匹配点。</p>';
+  
+  // 主体：针对JD前3个核心要求逐一匹配
+  const topTags = jdTags.slice(0, 3);
+  const tagIntroMap = {
+    '质检': '我在亚马逊做客服中心Coach时，核心工作就是抽检一线客服的case质量、总结共性问题、优化FAQ知识库来降低错误率。这和贵司质检岗位"依据标准抽检、分析问题、优化规则"的逻辑完全一致。',
+    '客服': '在亚马逊2.5年的客服管理经验让我对客服体系有深刻理解——从一线case升级处理、到团队培训赋能、再到流程迭代优化，形成了完整的闭环思维。',
+    '培训': '我在亚马逊负责新人实操指导和成熟员工再培训，通过总结一线共性问题制作培训课件，形成了"发现问题→总结→培训→验证效果"的闭环。',
+    '流程优化': '我在美团搭建了部门运营工具包，把跨部门协作经验沉淀成SOP和checklist，推动了部门长期工作法的建立。在亚马逊也优化了一线操作流程，直接降低了错误率和重复进线率。',
+    '数据分析': '在美团做APP主题页投放时，我独立完成投放后的浏览量、成交量等数据统计和复盘汇报，有从数据中找洞察、驱动决策的实操经验。',
+    '跨部门协作': '美团APP主题页需要牵头小象、闪购、外卖等10余条业务线整合促销方案，我通过统一目标、标准化信息收集、进度透明和结果闭环四步法，高效推动了多方协作。',
+    '供应商管理': '在美团我独立对接5+核心供应商，完成布展招标、合同签订到年度结算的全流程，也组织过4场供应商招商会，每场到场300+人。',
+    '活动统筹': '服贸会美团展区是我最有代表性的统筹项目——作为执行总负责人，统筹10余条业务线联合参展，从会前Kickoff到撤场全流程管理，两届展会顺利执行并沉淀了SOP。',
+    '项目管理': '我习惯用项目管理思维拆解工作——服贸会、招商会、APP主题页、运营工具包，每个项目都遵循"目标→拆解→执行→复盘→沉淀"的闭环。',
+    '内容运营': '我在美团做过研究院内部群发号的运营，通过内容分层推送策略将阅读率提升了4%。',
+    '政府关系': '美团公共事务部3.5年经历让我积累了政企对接和公共事务的认知，服贸会本身就是政府高度关注的展会，我在执行中与多方政府对接有实战经验。',
+    '案例库': '在亚马逊我维护了FAQ知识库，持续迭代优化。在美团也搭建了运营工具包，沉淀了业务协作通讯录等案例库。',
+    '疑难处理': '在亚马逊我专门处理一线客服升级的疑难case，通过case分析、溯源问题、优化流程来从根本上降低升级率。',
+    '团队管理': '我在亚马逊作为Coach带领团队成长，负责新人指导和团队培训赋能，有带人实操经验。',
+    '文档沉淀': '我有很强的体系化沉淀能力——服贸会checklist和人员手册、部门运营工具包、FAQ知识库，都是我的代表作。'
+  };
+  
+  intro += '<p><span class="hi-section">🎯 核心匹配（90秒）</span>';
+  topTags.forEach((tag, i) => {
+    const text = tagIntroMap[tag] || ('在' + tag + '方面，我有相关的实战经验和系统化的方法论积累。');
+    intro += '<strong>' + (i+1) + '、' + tag + '：</strong>' + text + '<br><br>';
+  });
+  
+  // 收尾
+  intro += '<span class="hi-section">💪 收尾（20秒）</span>';
+  intro += '总结一下，我的核心优势是<strong>项目管理思维+体系化沉淀能力</strong>，擅长把复杂的多方协作拆解成可复用的流程。这也是我对' + title + '岗位很感兴趣的原因，希望能有机会深入交流。谢谢！</p>';
+  
+  return intro;
+}
+
+// 生成面试问题建议（5个）
+function generateSuggestedQuestions(jd, jdTags, matched, unmatched) {
+  const title = jd.title || '该岗位';
+  const topTags = jdTags.slice(0, 3);
+  const topMatched = matched.slice(0, 2);
+  const gapTags = jdTags.filter(t => !matched.some(m => m.overlap.includes(t)));
+  
+  const questions = [];
+  
+  // 问题1：项目经验类 - 核心匹配项目
+  if (topMatched.length > 0) {
+    const m = topMatched[0];
+    questions.push({
+      q: '你在' + m.company + '做「' + m.title + '」时，遇到的最大挑战是什么？你是如何解决的？',
+      hint: '用<strong>STAR法则</strong>回答：先说具体挑战场景，再说你采取的行动步骤，最后量化结果。重点突出' + m.overlap.slice(0,2).join('和') + '能力如何发挥作用。'
+    });
+  }
+  
+  // 问题2：项目经验类 - 与JD最相关的能力
+  if (topTags.length > 0) {
+    const tag = topTags[0];
+    const tagQMap = {
+      '质检': '请分享一次你通过质检发现问题并推动改进的经历。具体发现了什么问题，推动了什么改变，效果如何？',
+      '客服': '如果让你从0到1搭建一套客服质检体系，你会怎么设计？',
+      '培训': '请分享你做过的最成功的一次培训赋能案例。培训对象是谁，你用了什么方法，效果怎么衡量？',
+      '流程优化': '请分享一个你主动推动流程优化的案例。你如何发现痛点、设计方案、推动落地？',
+      '数据分析': '请分享一次你用数据分析驱动业务决策的经历。你用了什么数据，得出了什么结论，推动了什么变化？',
+      '跨部门协作': '跨部门推动一件事情时，遇到对方不配合怎么办？请举一个实际案例。',
+      '供应商管理': '请分享一次你处理供应商问题或纠纷的经历。你是怎么平衡各方利益的？',
+      '活动统筹': '大型活动执行中，最让你焦虑的一个时刻是什么？你当时怎么应对的？',
+      '项目管理': '请用STAR法则介绍一个你从0到1负责的项目。重点讲你的角色和推动节奏。',
+      '内容运营': '请分享一个你通过内容策略提升用户活跃度的案例。你的策略逻辑和数据结果是什么？',
+      '政府关系': '请分享一次你在政府对接中处理突发情况的经历。',
+      '案例库': '请分享你是如何搭建和维护知识库/案例库的，有什么方法论？',
+      '疑难处理': '请分享一次你处理最棘手的case的经历。你是怎么一步步拆解和解决的？',
+      '团队管理': '请分享一次你带领团队克服困难完成目标的经历。',
+      '文档沉淀': '请分享你做过的最有价值的一次文档沉淀，它带来了什么长期影响？'
+    };
+    questions.push({
+      q: tagQMap[tag] || '请分享一个最能体现你' + tag + '能力的项目经历。',
+      hint: '用<strong>具体案例</strong>回答，不要空谈方法论。结构：背景→你的角色→关键行动→结果。如果结果可量化更好。'
+    });
+  }
+  
+  // 问题3：能力素养类 - 软技能
+  const softSkills = jdTags.filter(t => ['跨部门协作','流程优化','项目管理','文档沉淀'].includes(t));
+  if (softSkills.length > 0) {
+    const skill = softSkills[0];
+    const skillQMap = {
+      '跨部门协作': '不同部门的目标和优先级往往不一致，你是如何在这种情况下推动事情落地的？',
+      '流程优化': '当你发现一个现有流程效率很低但大家已经习惯了，你会怎么推动改变？',
+      '项目管理': '多项目并行时，你如何做优先级排序和时间管理？请分享你的方法论。',
+      '文档沉淀': '很多同学觉得写文档浪费时间，你怎么看这个问题？你是怎么确保文档被真正用起来的？'
+    };
+    questions.push({
+      q: skillQMap[skill] || '你认为做好' + title + '这个岗位，最关键的软技能是什么？为什么？',
+      hint: '回答时先给出<strong>你的方法论框架</strong>，再用一个<strong>真实案例</strong>佐证。面试官想听的是你的思维方式，不只是结果。'
+    });
+  } else {
+    questions.push({
+      q: '你觉得做好' + title + '这个岗位，最核心的能力是什么？请用你的经历来证明。',
+      hint: '从JD中提炼<strong>2-3个核心能力</strong>，每个能力用一个简短经历证明。最后总结为什么你适合这个岗位。'
+    });
+  }
+  
+  // 问题4：能力素养类 - 学习与适应
+  questions.push({
+    q: '请分享一次你快速学习一个新领域并应用到工作中的经历。',
+    hint: '用<strong>"学什么→为什么学→怎么学→怎么用→什么效果"</strong>五步法回答。重点展示你的学习能力和迁移能力。'
+  });
+  
+  // 问题5：差距/挑战类
+  if (gapTags.length > 0) {
+    questions.push({
+      q: '你之前在' + gapTags.slice(0,2).join('、') + '方面的直接经验不多，你打算如何快速补上？',
+      hint: '坦诚承认差距，然后展示你的<strong>学习计划</strong>：①已有的可迁移能力 ②具体学习路径 ③预期上手时间。让面试官看到你的成长思维。'
+    });
+  } else {
+    questions.push({
+      q: '如果入职后你发现实际工作和你预期的不一样，你会怎么应对？',
+      hint: '展示你的<strong>适应力和韧性</strong>：先充分理解现状→找到切入点→小步快跑验证→逐步扩大影响范围。'
+    });
+  }
+  
+  return questions;
+}
+
 // 渲染分析结果HTML
 function renderJDAnalysisHTML(a) {
   if (!a) return '';
   let matchedHtml = a.matched.length ? a.matched.map(m => '<li><strong>'+m.title+'</strong>：匹配 '+m.overlap.join('、')+'</li>').join('') : '<li>暂无明显匹配项目</li>';
   let gapHtml = a.unmatched.length ? a.unmatched.slice(0,2).map(m => '<li>'+m.title+'（可补充说明迁移能力）</li>').join('') : '<li>无明显差距</li>';
+  
+  // 自我介绍模块
+  let selfIntroHtml = '';
+  if (a.selfIntro) {
+    selfIntroHtml = '<div class="jd-analysis-section"><div class="jd-analysis-section-title">🎙️ 自我介绍话术</div><div class="jd-selfintro editable" data-key="jd_selfintro_'+a.timestamp+'">'+a.selfIntro+'</div></div>';
+  }
+  
+  // 面试问题建议模块
+  let questionsHtml = '';
+  if (a.suggestedQuestions && a.suggestedQuestions.length > 0) {
+    questionsHtml = '<div class="jd-analysis-section"><div class="jd-analysis-section-title">💡 面试问题建议（5题）</div>'+
+      a.suggestedQuestions.map((sq, i) => 
+        '<div class="jd-suggest-q"><div class="sq-title"><span class="sq-num">'+(i+1)+'</span><span>'+sq.q+'</span></div><div class="sq-hint">💭 <strong>答题思路：</strong>'+sq.hint+'</div></div>'
+      ).join('')+'</div>';
+  }
   
   return '<div class="jd-analysis"><div class="jd-analysis-title">📊 智能匹配分析</div>'+
     '<div class="jd-match-score"><div class="jd-score-bar"><div class="jd-score-fill" style="width:'+a.score+'%"></div></div><div class="jd-score-text">'+a.score+'%</div></div>'+
@@ -956,6 +1115,7 @@ function renderJDAnalysisHTML(a) {
     '<div class="jd-analysis-section"><div class="jd-analysis-section-title">✅ 匹配经历</div><ul>'+matchedHtml+'</ul></div>'+
     '<div class="jd-analysis-section"><div class="jd-analysis-section-title">⚠️ 需补充的差距</div><ul>'+gapHtml+'</ul></div>'+
     '<div class="jd-analysis-section"><div class="jd-analysis-section-title">🎤 面试话术建议</div><div class="jd-script editable" data-key="jd_script_'+a.timestamp+'">'+a.script+'</div></div>'+
+    selfIntroHtml + questionsHtml +
     '</div>';
 }
 
