@@ -13,9 +13,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue'
 .header{position:sticky;top:0;z-index:100;background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);color:var(--secondary);padding:44px 16px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.08);display:flex;justify-content:space-between;align-items:flex-end}
 .header h1{font-size:20px;font-weight:700;margin-bottom:4px}
 .header p{font-size:12px;opacity:0.8}
+.header .ws-name{cursor:pointer;position:relative;display:inline-flex;align-items:center;gap:4px}
+.header .ws-name::after{content:'✎';font-size:12px;opacity:0;transition:opacity .15s}
+body.edit-mode .header .ws-name::after{opacity:.6}
+.header .ws-sub{cursor:pointer}
 .header-btns{display:flex;gap:6px}
 .hbtn{font-size:10px;background:var(--secondary);color:var(--primary);border:none;padding:6px 10px;border-radius:20px;font-weight:700;cursor:pointer;white-space:nowrap}
 .hbtn.active{background:#fff;color:var(--accent)}
+/* Tab 内编辑栏 */
+.tab-edit-bar{display:flex;gap:8px;margin-bottom:12px;align-items:center}
+.tab-edit-bar .teb-btn{flex-shrink:0;font-size:12px;background:var(--secondary);color:var(--primary);border:none;padding:8px 14px;border-radius:20px;font-weight:700;cursor:pointer}
+.tab-edit-bar .teb-btn.on{background:var(--accent);color:#fff}
+.tab-edit-bar .teb-hint{flex:1;font-size:11px;color:var(--text-light);text-align:right}
 .tab-bar{display:flex;background:var(--card-bg);position:sticky;top:92px;z-index:99;border-bottom:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .tab-bar::-webkit-scrollbar{display:none}
 .tab-item{flex:1 0 auto;padding:12px 14px;text-align:center;font-size:13px;color:var(--text-sub);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all .2s;font-weight:500;position:relative}
@@ -203,12 +212,14 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
 <body>
 <div class="app-container">
 <div class="header">
-  <div><h1>面试工作台</h1><p>项目管理思维 · 结构化备战</p></div>
+  <div>
+    <h1 class="ws-name" id="wsName" onclick="editWsName()">面试工作台</h1>
+    <p class="ws-sub" id="wsSub" onclick="editWsSub()">项目管理思维 · 结构化备战</p>
+  </div>
   <div class="header-btns">
     <button class="hbtn" id="updateBtn" onclick="checkUpdate()">🔄 更新</button>
     <button class="hbtn" onclick="openSync()">☁️ 同步</button>
     <button class="hbtn" onclick="showHistory()">📜 记录</button>
-    <button class="hbtn" id="editToggle" onclick="toggleEditMode()">✏️ 编辑</button>
   </div>
 </div>
 
@@ -222,7 +233,7 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
 
 <!-- ============ 工作内容 ============ -->
 <div class="content-area active" id="tab-work">
-  <div class="edit-hint">💡 编辑模式已开启，点击任意文字段落即可修改</div>
+  <div class="tab-edit-bar"><button class="teb-btn" id="etb-work" onclick="toggleTabEdit('work')">✏️ 编辑本栏</button><span class="teb-hint" id="teh-work"></span></div>
   <div class="reset-bar">
     <button onclick="resetAllData()">🔄 恢复全部原始</button>
     <button onclick="addProject()">➕ 添加新项目</button>
@@ -341,7 +352,7 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
 
 <!-- ============ 简历 ============ -->
 <div class="content-area" id="tab-resume">
-  <div class="edit-hint">💡 编辑模式已开启，点击任意文字段落即可修改</div>
+  <div class="tab-edit-bar"><button class="teb-btn" id="etb-resume" onclick="toggleTabEdit('resume')">✏️ 编辑本栏</button><span class="teb-hint" id="teh-resume"></span></div>
   <div class="reset-bar"><button onclick="resetAllData()">🔄 恢复全部原始</button></div>
   <div class="card">
     <div class="resume-header">
@@ -374,7 +385,7 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
 
 <!-- ============ 岗位JD ============ -->
 <div class="content-area" id="tab-jd">
-  <div class="edit-hint">💡 编辑模式已开启，点击任意文字段落即可修改</div>
+  <div class="tab-edit-bar"><button class="teb-btn" id="etb-jd" onclick="toggleTabEdit('jd')">✏️ 编辑本栏</button><span class="teb-hint" id="teh-jd"></span></div>
   <div class="reset-bar"><button onclick="resetAllData()">🔄 恢复全部原始</button></div>
 
   <div class="card jd-input-area">
@@ -399,7 +410,7 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
 
 <!-- ============ 面试问题 ============ -->
 <div class="content-area" id="tab-qa">
-  <div class="edit-hint">💡 编辑模式已开启，点击任意文字段落即可修改</div>
+  <div class="tab-edit-bar"><button class="teb-btn" id="etb-qa" onclick="toggleTabEdit('qa')">✏️ 编辑本栏</button><span class="teb-hint" id="teh-qa"></span></div>
   <div class="reset-bar">
     <button onclick="resetAllData()">🔄 恢复全部原始</button>
     <button onclick="addQuestion()">➕ 添加新问题</button>
@@ -560,7 +571,7 @@ const DEFAULT_CATS = [
 let catConfig = [];
 
 // ============ 版本与在线更新 ============
-const APP_VERSION = '3.0';
+const APP_VERSION = '4.0';
 const UPDATE_URL = 'https://cdn.jsdelivr.net/gh/xxuan-cell/interview-workbench@master/index.html';
 const UPDATE_URL_BACKUP = 'https://github.com/xxuan-cell/interview-workbench/raw/master/index.html';
 
@@ -716,12 +727,63 @@ function clearHistory() {
 function saveToStorage(key, val) { try { localStorage.setItem('iw_'+key, JSON.stringify(val)); } catch(e) {} }
 function loadFromStorage(key, def) { try { const v = localStorage.getItem('iw_'+key); return v ? JSON.parse(v) : def; } catch(e) { return def; } }
 
-// ============ 编辑模式 ============
-function toggleEditMode() {
-  editMode = !editMode;
-  const btn = document.getElementById('editToggle');
-  if (editMode) { document.body.classList.add('edit-mode'); btn.textContent = '✅ 完成'; btn.classList.add('active'); }
-  else { document.body.classList.remove('edit-mode'); btn.textContent = '✏️ 编辑'; btn.classList.remove('active'); }
+// ============ 编辑模式（按 Tab 独立控制） ============
+let tabEditStates = {};  // {work:false, resume:false, ...}
+
+function toggleTabEdit(tabKey) {
+  // 关闭其他所有 tab 的编辑状态，开启当前 tab
+  const willOn = !tabEditStates[tabKey];
+  tabConfig.forEach(t => { tabEditStates[t.key] = false; });
+  tabEditStates[tabKey] = willOn;
+  editMode = willOn;  // 供 editable 点击判断用（只对当前 tab 生效）
+  applyTabEditUI();
+  // 自定义板块需重渲染按钮状态
+  const t = tabConfig.find(x => x.key === tabKey);
+  if (t && !t.builtin) {
+    const area = document.getElementById('tab-' + tabKey);
+    if (area) renderCustomTabContent(area, tabKey);
+  }
+  if (willOn) showToast('已开启「'+(t?t.name:tabKey)+'」编辑');
+}
+
+function applyTabEditUI() {
+  const activeTab = document.querySelector('.tab-item.active')?.dataset.tab || 'work';
+  const on = !!tabEditStates[activeTab];
+  editMode = on;
+  document.body.classList.toggle('edit-mode', on);
+  // 更新所有 tab 内的编辑按钮状态
+  tabConfig.forEach(t => {
+    const btn = document.getElementById('etb-' + t.key);
+    const hint = document.getElementById('teh-' + t.key);
+    if (btn) {
+      btn.textContent = tabEditStates[t.key] ? '✅ 完成编辑' : '✏️ 编辑本栏';
+      btn.classList.toggle('on', !!tabEditStates[t.key]);
+    }
+    if (hint) hint.textContent = tabEditStates[t.key] ? '💡 点文字即可修改' : '';
+  });
+}
+
+function toggleEditMode() { toggleTabEdit(document.querySelector('.tab-item.active')?.dataset.tab || 'work'); }
+
+// ============ 工作台名称自定义 ============
+function editWsName() {
+  if (!editMode) { openPrompt('修改工作台名称', document.getElementById('wsName').textContent, saveWsName); return; }
+  openPrompt('修改工作台名称', document.getElementById('wsName').textContent, saveWsName);
+}
+function saveWsName(val) {
+  if (!val) return;
+  document.getElementById('wsName').textContent = val;
+  saveToStorage('ws_name', val);
+  addHistory('修改名称', '工作台改名为「'+val+'」');
+  showToast('名称已更新 ✅');
+}
+function editWsSub() {
+  openPrompt('修改副标题', document.getElementById('wsSub').textContent, function(val) {
+    if (!val) return;
+    document.getElementById('wsSub').textContent = val;
+    saveToStorage('ws_sub', val);
+    showToast('副标题已更新 ✅');
+  });
 }
 
 // ============ 编辑弹窗 ============
@@ -784,6 +846,7 @@ function switchTab(name) {
   document.querySelectorAll('.content-area').forEach(c => c.classList.toggle('active', c.id === 'tab-' + name));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.tab === name));
   window.scrollTo(0, 0);
+  applyTabEditUI();  // 切 tab 时同步编辑状态
 }
 
 // ============ 板块动态渲染 ============
@@ -913,7 +976,9 @@ function renderTabContents() {
 }
 function renderCustomTabContent(area, key) {
   const cards = loadFromStorage('card_' + key, []);
-  area.innerHTML = cards.map((c, i) => '<div class="custom-card"><span class="cc-del" onclick="delCustomCard(\''+key+'\','+i+')">删除</span><div class="cc-text editable" data-key="card_'+key+'_'+i+'">'+(c||'')+'</div></div>').join('') +
+  const editing = !!tabEditStates[key];
+  area.innerHTML = '<div class="tab-edit-bar"><button class="teb-btn'+(editing?' on':'')+'" id="etb-'+key+'" onclick="toggleTabEdit(\''+key+'\')">'+(editing?'✅ 完成编辑':'✏️ 编辑本栏')+'</button><span class="teb-hint" id="teh-'+key+'">'+(editing?'💡 点文字即可修改':'')+'</span></div>' +
+    cards.map((c, i) => '<div class="custom-card"><span class="cc-del" onclick="delCustomCard(\''+key+'\','+i+')">删除</span><div class="cc-text editable" data-key="card_'+key+'_'+i+'">'+(c||'')+'</div></div>').join('') +
     '<button class="add-card-btn" onclick="addCustomCard(\''+key+'\')">➕ 添加卡片</button>';
   initEditable();
 }
@@ -1596,6 +1661,13 @@ function init() {
   editHistory = loadFromStorage('history', []);
   loadTabConfig();
   loadCatConfig();
+  // 加载工作台名称
+  const savedName = loadFromStorage('ws_name', null);
+  if (savedName) document.getElementById('wsName').textContent = savedName;
+  const savedSub = loadFromStorage('ws_sub', null);
+  if (savedSub) document.getElementById('wsSub').textContent = savedSub;
+  // 初始化各 tab 编辑状态
+  tabConfig.forEach(t => { tabEditStates[t.key] = false; });
   renderTabs();
   renderQaFilter();
   renderAddQCatSelect();
@@ -1603,6 +1675,7 @@ function init() {
   renderUserProjects();
   renderJDs();
   initEditable();
+  applyTabEditUI();
   // 底部导航绑定
   document.querySelectorAll('.nav-item').forEach(n => n.addEventListener('click', () => switchTab(n.dataset.tab)));
   // 弹窗背景关闭
