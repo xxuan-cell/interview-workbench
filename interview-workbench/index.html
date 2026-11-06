@@ -52,15 +52,19 @@ body.edit-mode .custom-card .cc-del{display:block}
 .card-title{font-size:16px;font-weight:700;color:var(--secondary);margin-bottom:12px;display:flex;align-items:center;gap:8px;padding-right:38px}
 .card-title:has(.jd-refresh-btn){padding-right:0}
 .card-title .jd-refresh-btn{margin-left:auto}
-/* 卡片级编辑按钮（醒目版） */
-.card-edit-btn{position:absolute;top:8px;right:8px;z-index:20;font-size:12px;background:#FFF3E0;color:#E65100;border:1px solid #FFB74D;padding:4px 10px;border-radius:12px;font-weight:700;cursor:pointer;line-height:1.3;box-shadow:0 1px 4px rgba(230,81,0,.25);white-space:nowrap;font-family:inherit}
+/* 岗位速览卡片：刷新 + 编辑按钮同一行、同尺寸同风格 */
+.jd-summary-card .card-title{padding-right:0}
+.jd-summary-card .card-edit-btn{position:static;top:auto;right:auto;flex-shrink:0;margin-left:6px}
+.jd-summary-card .card-title .jd-refresh-btn,
+.jd-summary-card .card-title .card-edit-btn{width:26px;height:26px;min-width:26px;flex:0 0 26px;padding:0;font-size:13px;line-height:1;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#FFF3E0;color:#E65100;border:1px solid #FFB74D;box-shadow:0 1px 2px rgba(230,81,0,.15);cursor:pointer}
+.jd-summary-card .card-title .jd-refresh-btn:active,
+.jd-summary-card .card-title .card-edit-btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+/* 卡片级编辑按钮（纯图标小铅笔） */
+.card-edit-btn{position:absolute;top:8px;right:8px;z-index:20;font-size:13px;line-height:1;background:#FFF3E0;color:#E65100;border:1px solid #FFB74D;padding:5px;width:26px;height:26px;border-radius:50%;font-weight:700;cursor:pointer;box-shadow:0 1px 2px rgba(230,81,0,.15);font-family:inherit;display:flex;align-items:center;justify-content:center}
 .card-edit-btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
 .card.card-editing{box-shadow:0 0 0 2px var(--accent),0 2px 8px rgba(255,107,53,0.15)}
 .card.card-editing .editable{border:1px dashed rgba(255,107,53,0.5);border-radius:4px;padding:1px 3px;margin:-1px -3px}
 .card .collapsible .card-edit-btn{display:none}
-/* 需求3：避免刷新按钮与铅笔按钮重叠 */
-.jd-summary-card .card-title{padding-right:78px}
-.jd-summary-card .card-edit-btn{right:44px}
 /* 需求3：右下角悬浮加号 */
 .fab-add{position:fixed;right:calc(50% - 240px + 20px);bottom:96px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#FF8A50);color:#fff;font-size:28px;font-weight:400;line-height:1;border:none;box-shadow:0 4px 14px rgba(255,107,53,.45);cursor:pointer;z-index:120;display:flex;align-items:center;justify-content:center}
 @media(max-width:520px){.fab-add{right:20px}}
@@ -102,9 +106,9 @@ body.edit-mode .custom-card .cc-del{display:block}
 .data-item .num{font-size:20px;font-weight:700;color:var(--accent)}
 .data-item .desc{font-size:11px;color:var(--text-light);margin-top:2px}
 .collapsible{background:var(--card-bg);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05);position:relative}
-.collapsible-header{padding:14px 16px;display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600;color:var(--secondary);padding-right:44px}
-.collapsible-header .arrow{transition:transform .3s;font-size:12px;color:var(--text-light);display:none}
-.collapsible.open .arrow{transform:rotate(90deg)}
+.collapsible-header{padding:14px 44px 14px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--secondary);cursor:pointer;user-select:none}
+.collapsible-header .arrow{transition:transform .3s;font-size:11px;color:var(--text-light);display:inline-block;flex-shrink:0}
+.collapsible.open .collapsible-header .arrow{transform:rotate(90deg)}
 .collapsible-body{display:none;padding:0 16px 16px;border-top:1px solid var(--border)}
 .collapsible.open .collapsible-body{display:block;animation:slideDown .3s ease}
 .collapsible > .card-expand-bar{margin-top:0;padding:11px 0;background:#FCFCFD}
@@ -160,6 +164,19 @@ body.edit-mode .custom-card .cc-del{display:block}
 .toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 .toolbar-btn{flex:1 0 auto;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:white;font-size:11px;color:var(--text-sub);text-align:center;cursor:pointer;font-weight:500}
 .toolbar-btn.active{background:var(--secondary);color:var(--primary);border-color:var(--secondary)}
+/* 面试分类筛选条：横向滑动，不换行，滚动时吸顶便于拖放入分类 */
+.qa-filter-wrap{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:4px;margin-bottom:6px;position:sticky;z-index:90;background:var(--bg);padding-top:6px}
+.qa-filter-wrap::-webkit-scrollbar{display:none}
+.qa-filter-wrap .toolbar-btn{flex:0 0 auto;white-space:nowrap;user-select:none;-webkit-user-select:none;touch-action:pan-x}
+.qa-filter-wrap .toolbar-btn.dragging{opacity:.5;border-style:dashed}
+.qa-filter-wrap .toolbar-btn.drag-over{border-color:var(--accent);color:var(--accent)}
+.qa-filter-wrap .toolbar-btn.cat-add{color:var(--accent);border-color:var(--accent);background:#FFF8F3}
+.qa-hint{font-size:10px;color:var(--text-light);margin:-2px 0 10px;line-height:1.6}
+/* 问题卡片拖动 */
+.q-card.qa-dragging{opacity:.45;border-style:dashed;box-shadow:0 0 0 2px var(--accent)}
+.q-card.qa-drag-over{box-shadow:0 0 0 2px var(--accent),0 4px 12px rgba(255,107,53,.25)}
+.toolbar-btn.qa-cat-target{background:var(--accent)!important;color:#fff!important;border-color:var(--accent)!important;transform:scale(1.08)}
+.q-card .q-header{touch-action:pan-y}
 .app-container{max-width:480px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative}
 @media(min-width:481px){body{background:#E5E7EB}}
 
@@ -269,7 +286,6 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
     <button class="hbtn" id="updateBtn" onclick="checkUpdate()">🔄 升级App</button>
     <button class="hbtn" onclick="openSync()">☁️ 数据同步</button>
     <button class="hbtn" onclick="showHistory()">📜 记录</button>
-    <button class="hbtn" onclick="openTabManager()">⚙️ 板块</button>
     <button class="hbtn" onclick="showVersionInfo()">ℹ️ 版本</button>
   </div>
 </div>
@@ -476,6 +492,7 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
     <div class="toolbar-btn" data-filter="career">职业发展</div>
     <div class="toolbar-btn" data-filter="custom">自定义</div>
   </div>
+  <div class="qa-hint">左右滑动查看分类 · 双击改名 · 长按tab拖动排序 · 长按tab原地松手删除 · 长按问题卡拖动可排序或移入分类</div>
 
   <div id="qaList"></div>
   <button class="add-btn" onclick="addQuestion()">➕ 添加新问题</button>
@@ -496,21 +513,6 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
       <button class="btn-danger" onclick="resetOneField()">恢复原始</button>
       <button class="btn-cancel" onclick="closeEdit()">取消</button>
       <button class="btn-save" onclick="saveEdit()">保存</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===== 板块管理弹窗 ===== -->
-<div class="edit-overlay" id="tabMgrOverlay">
-  <div class="panel"><h3>⚙️ 板块管理</h3>
-    <div style="font-size:12px;color:var(--text-sub);line-height:1.7;margin-bottom:12px">
-      可以调整板块顺序、重命名、新增或删除板块。<br>
-      <span style="color:var(--accent)">快捷操作：</span>直接在底部导航栏<strong>长按拖动</strong>可调整顺序，<strong>双击</strong>可修改名称。
-    </div>
-    <div id="tabMgrList"></div>
-    <button class="add-card-btn" onclick="addCustomTab()">➕ 新增板块</button>
-    <div class="panel-actions">
-      <button class="btn-save" onclick="closeTabManager()">完成</button>
     </div>
   </div>
 </div>
@@ -675,10 +677,13 @@ const DEFAULT_CATS = [
   {key:'custom',  name:'自定义'}
 ];
 let catConfig = [];
+let groupsCache = {};  // 各分类下的问题数缓存 {catKey: [q,...]}
+let qaOrder = [];      // 问题全局显示顺序（问题id数组）
+let qaCatOverride = {}; // 问题分类覆盖 {qid: catKey}
 
 // ============ 版本与在线更新 ============
-const APP_VERSION = '5.5';
-const APP_TAG = 'v5.5';  // 当前发布标签，发新版时同步更新
+const APP_VERSION = '5.6';
+const APP_TAG = 'v5.6';  // 当前发布标签，发新版时同步更新
 const REPO = 'xxuan-cell/interview-workbench';
 
 // 多源候选：按可靠性排序，逐个尝试
@@ -919,21 +924,30 @@ function toggleEditMode() { /* 已改为卡片级编辑，保留空函数兼容 
 function injectCardEditBtns() {
   // 通用卡片
   document.querySelectorAll('.card').forEach(card => {
-    if (card.querySelector(':scope > .card-edit-btn')) return;
+    if (card.querySelector(':scope > .card-edit-btn') || card.querySelector(':scope > .card-title > .card-edit-btn')) return;
     if (!card.querySelector('.editable')) return;  // 无内容可编辑则不加
     const btn = document.createElement('button');
     btn.className = 'card-edit-btn';
     btn.type = 'button';
-    btn.textContent = '✏️ 编辑';
+    btn.title = '编辑本卡片';
+    btn.setAttribute('aria-label', '编辑');
+    btn.textContent = '✏️';
     btn.onclick = function(ev) {
       ev.stopPropagation();
       card.classList.toggle('card-editing');
       const on = card.classList.contains('card-editing');
       btn.classList.toggle('on', on);
-      btn.textContent = on ? '✅ 完成' : '✏️ 编辑';
+      btn.textContent = on ? '✅' : '✏️';
+      btn.title = on ? '完成编辑' : '编辑本卡片';
       if (on) showToast('已开启本卡片编辑，点文字即可修改');
     };
-    card.appendChild(btn);
+    // 岗位速览卡片：插入标题行，与刷新按钮同排对齐
+    const ttl = card.querySelector(':scope > .card-title');
+    if (card.classList.contains('jd-summary-card') && ttl) {
+      ttl.appendChild(btn);
+    } else {
+      card.appendChild(btn);
+    }
   });
   // 面试问题卡片（.q-card 结构，编辑按钮放标题区右上角）
   document.querySelectorAll('.q-card').forEach(card => {
@@ -947,58 +961,60 @@ function injectCardEditBtns() {
     btn.style.position = 'static';
     btn.style.flexShrink = '0';
     btn.style.marginLeft = '4px';
-    btn.textContent = '✏️ 编辑';
+    btn.textContent = '✏️';
+    btn.title = '编辑本卡片';
+    btn.setAttribute('aria-label', '编辑');
     btn.onclick = function(ev) {
       ev.stopPropagation();
       card.classList.toggle('card-editing');
       const on = card.classList.contains('card-editing');
       btn.classList.toggle('on', on);
-      btn.textContent = on ? '✅ 完成' : '✏️ 编辑';
+      btn.textContent = on ? '✅' : '✏️';
+      btn.title = on ? '完成编辑' : '编辑本卡片';
       if (on) { card.classList.add('open'); showToast('已开启本问题编辑'); }
     };
     header.appendChild(btn);
   });
-  // 折叠面板（项目卡片）：需求4 - 展开条移到底部，编辑按钮放右上角
+  // 折叠面板（项目卡片）：展开/收起改由标题行 + 箭头控制，编辑按钮放右上角
   document.querySelectorAll('.collapsible').forEach(card => {
     if (card.querySelector(':scope > .collapsible-header .card-edit-btn')) return;
     if (!card.querySelector('.editable')) return;
     const header = card.querySelector(':scope > .collapsible-header');
     if (!header) return;
-    // 1) 编辑按钮：放卡片右上角（absolute），不再挤在标题旁
+    // 1) 编辑按钮：卡片右上角（absolute）
     const btn = document.createElement('button');
     btn.className = 'card-edit-btn collapsible-edit-btn';
     btn.type = 'button';
-    btn.textContent = '✏️ 编辑';
+    btn.textContent = '✏️';
+    btn.title = '编辑本项目';
+    btn.setAttribute('aria-label', '编辑');
     btn.onclick = function(ev) {
       ev.stopPropagation();
       card.classList.toggle('editing');
       const on = card.classList.contains('editing');
       btn.classList.toggle('on', on);
-      btn.textContent = on ? '✅ 完成' : '✏️ 编辑';
+      btn.textContent = on ? '✅' : '✏️';
+      btn.title = on ? '完成编辑' : '编辑本项目';
       if (on) card.classList.add('open');
     };
     card.appendChild(btn);
-    // 2) 移除 header 上的点击展开与旧箭头，改由底部展开条控制
-    header.onclick = null;
-    header.style.cursor = 'default';
-    const oldArrow = header.querySelector('.arrow');
-    if (oldArrow) oldArrow.style.display = 'none';
-    // 3) 底部展开条（确保是最后一个子元素）
-    if (!card.querySelector(':scope > .card-expand-bar')) {
-      const bar = document.createElement('div');
-      bar.className = 'card-expand-bar';
-      bar.innerHTML = '<span class="ceb-text">' + (card.classList.contains('open') ? '点击收起' : '点击展开') + '</span><span class="ceb-arrow">▼</span>';
-      bar.onclick = function(ev) {
-        ev.stopPropagation();
-        toggleCardExpand(bar);
-      };
-      card.appendChild(bar);
+    // 2) 标题行整行可点击展开/收起，箭头显示在右侧
+    header.onclick = function(ev) {
+      if (ev.target.closest('.card-edit-btn') || ev.target.closest('.proj-delete-btn')) return;
+      toggleCollapse(header);
+    };
+    header.style.cursor = 'pointer';
+    let arrow = header.querySelector('.arrow');
+    if (!arrow) {
+      arrow = document.createElement('span');
+      arrow.className = 'arrow';
+      header.appendChild(arrow);
     }
-    // 编辑按钮放在展开条之前，保证展开条始终在最底部
-    const barEl = card.querySelector(':scope > .card-expand-bar');
-    if (barEl && barEl.previousElementSibling !== btn) {
-      card.insertBefore(btn, barEl);
-    }
+    arrow.textContent = '▶';
+    arrow.style.display = '';
+    // 3) 移除旧的底部展开条（若存在）
+    const oldBar = card.querySelector(':scope > .card-expand-bar');
+    if (oldBar) oldBar.remove();
   });
 }
 
@@ -1131,7 +1147,9 @@ function renderBottomNav() {
     return '<div class="nav-item'+(t.key===activeKey?' active':'')+'" data-tab="'+t.key+'">'+
              '<span class="nav-icon">'+icon+'</span><span class="nav-label">'+name+'</span>'+
            '</div>';
-  }).join('');
+  }).join('') + '<div class="nav-item nav-add" id="navAddBtn" title="新增板块">'+
+             '<span class="nav-icon">➕</span><span class="nav-label">新增</span>'+
+           '</div>';
 
   nav.querySelectorAll('.nav-item').forEach(item => {
     const key = item.dataset.tab;
@@ -1152,6 +1170,16 @@ function renderBottomNav() {
       reorderTabs(dragSrcKey, key); dragMoved = true;
     });
   });
+
+  // 新增板块按钮
+  const addBtn = document.getElementById('navAddBtn');
+  if (addBtn) {
+    addBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (dragMoved) return;
+      addCustomTab();
+    });
+  }
 }
 
 let navDblFlag = false;
@@ -1263,30 +1291,12 @@ function delCustomCard(key, idx) {
 }
 
 // ============ 板块管理面板 ============
-function openTabManager() {
-  document.getElementById('tabMgrOverlay').classList.add('show');
-  renderTabMgrList();
-}
-function closeTabManager() { document.getElementById('tabMgrOverlay').classList.remove('show'); renderTabs(); }
-function renderTabMgrList() {
-  const list = document.getElementById('tabMgrList');
-  list.innerHTML = tabConfig.map((t, i) =>
-    '<div class="tab-mgr-row">' +
-      '<span style="font-size:12px;color:var(--text-light);width:16px">'+(i+1)+'</span>' +
-      '<span class="tm-name">'+t.name+'</span>' +
-      '<button class="tm-btn" onclick="moveTabItem('+i+',-1)" '+(i===0?'disabled':'')+'>↑</button>' +
-      '<button class="tm-btn" onclick="moveTabItem('+i+',1)" '+(i===tabConfig.length-1?'disabled':'')+'>↓</button>' +
-      '<button class="tm-btn" onclick="renameTabItem('+i+')">✎</button>' +
-      (t.builtin ? '' : '<button class="tm-btn tm-del" onclick="deleteTabItem('+i+')">✕</button>') +
-    '</div>'
-  ).join('');
-}
 function moveTabItem(idx, dir) {
   const ni = idx + dir;
   if (ni < 0 || ni >= tabConfig.length) return;
   const [m] = tabConfig.splice(idx, 1);
   tabConfig.splice(ni, 0, m);
-  saveTabs(); renderTabMgrList(); renderTabs();
+  saveTabs(); renderTabs();
 }
 function renameTabItem(idx) {
   const t = tabConfig[idx];
@@ -1295,7 +1305,8 @@ function renameTabItem(idx) {
     t.name = val;
     // 同步更新底部导航名（内置板块）
     if (t.builtin && val.length <= 4) t.navName = val;
-    saveTabs(); renderTabMgrList(); renderTabs();
+    else if (!t.builtin) t.navName = val.length > 5 ? val.substring(0,5) : val;
+    saveTabs(); renderTabs();
     showToast('板块已重命名 ✅');
   });
 }
@@ -1306,7 +1317,7 @@ function deleteTabItem(idx) {
     if (!ok) return;
     localStorage.removeItem('iw_card_' + t.key);
     tabConfig.splice(idx, 1);
-    saveTabs(); renderTabMgrList(); renderTabs();
+    saveTabs(); renderTabs();
     showToast('板块已删除');
   }, {title: '删除板块', okText: '删除'});
 }
@@ -1317,7 +1328,7 @@ function addCustomTab() {
     tabConfig.push({key, name: val, icon:'📌', builtin:false});
     saveTabs();
     saveToStorage('card_' + key, ['']);
-    renderTabMgrList(); renderTabs();
+    renderTabs();
     addHistory('新增板块', '新增了板块「'+val+'」');
     showToast('板块已添加 ✅');
   });
@@ -1377,12 +1388,22 @@ function showToast(msg, duration) {
 // ============ 面试问题 ============
 function renderAllQuestions() {
   const all = [...presetQuestions, ...userQuestions.map((q,i) => ({...q, id:'uq_'+i, userAdded:true}))];
+  // 应用分类覆盖
+  all.forEach(q => { if (qaCatOverride[q.id]) q.cat = qaCatOverride[q.id]; });
+  // 应用自定义顺序：初始化一次，之后完全按 qaOrder 排列
+  const ids = all.map(q => q.id);
+  const validOrder = qaOrder.filter(id => ids.includes(id));
+  ids.forEach(id => { if (!validOrder.includes(id)) validOrder.push(id); });
+  qaOrder = validOrder;
+  saveToStorage('qa_order', qaOrder);
+  const sorted = validOrder.map(id => all.find(q => q.id === id));
   const container = document.getElementById('qaList');
   // 按分类分组，生成每个分类前的汇总卡片
   const groups = {};
-  all.forEach((q, idx) => {
+  sorted.forEach((q, idx) => {
     (groups[q.cat] = groups[q.cat] || []).push({q, idx});
   });
+  groupsCache = groups;
   // 按 catConfig 顺序输出各分类的汇总卡片 + 问题卡片
   let html = '';
   const orderedCats = catConfig.map(c => c.key).filter(k => groups[k]);
@@ -1405,7 +1426,115 @@ function renderAllQuestions() {
     });
   });
   container.innerHTML = html;
-  initEditable(); applyQFilter();
+  initEditable(); applyQFilter(); attachQCardDrag();
+}
+
+// ============ 问题拖动：长按拖到其他问题上=排序，拖到分类tab上=移入分类 ============
+function moveQuestionToCat(qid, catKey) {
+  const q = [...presetQuestions, ...userQuestions].find(x => x.id === qid);
+  const name = q ? String(q.title).replace(/<[^>]+>/g,'').substring(0,20) : qid;
+  qaCatOverride[qid] = catKey;
+  saveToStorage('qa_cat', qaCatOverride);
+  addHistory('移动问题', '「'+name+'」移入「'+catLabel(catKey)+'」');
+  renderAllQuestions();
+  showToast('已移入「'+catLabel(catKey)+'」✅');
+}
+
+function reorderQuestions(srcQid, dstQid) {
+  if (srcQid === dstQid) return;
+  const si = qaOrder.indexOf(srcQid), di = qaOrder.indexOf(dstQid);
+  if (si < 0 || di < 0) return;
+  qaOrder.splice(si, 1);
+  qaOrder.splice(qaOrder.indexOf(dstQid) + 1, 0, srcQid);  // 放到目标之后
+  saveToStorage('qa_order', qaOrder);
+  renderAllQuestions();
+  showToast('顺序已调整');
+}
+
+function attachQCardDrag() {
+  const cards = [...document.querySelectorAll('#qaList .q-card')];
+  // ---- 桌面端 HTML5 拖拽 ----
+  cards.forEach(card => {
+    const qid = card.dataset.qid;
+    card.draggable = true;
+    card.addEventListener('dragstart', e => {
+      window.__qaDragId = qid; card.classList.add('qa-dragging'); e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', () => {
+      card.classList.remove('qa-dragging');
+      clearQaDragHighlights();
+      window.__qaDragId = null;
+    });
+    card.addEventListener('dragover', e => {
+      if (!window.__qaDragId || window.__qaDragId === qid) return;
+      e.preventDefault(); card.classList.add('qa-drag-over');
+    });
+    card.addEventListener('dragleave', () => card.classList.remove('qa-drag-over'));
+    card.addEventListener('drop', e => {
+      e.preventDefault();
+      if (window.__qaDragId && window.__qaDragId !== qid) reorderQuestions(window.__qaDragId, qid);
+    });
+  });
+  // 分类tab作为拖放目标（桌面）
+  document.querySelectorAll('#qaFilter .toolbar-btn[data-catkey]').forEach(tab => {
+    if (tab.dataset.qaDropBound) return;
+    tab.dataset.qaDropBound = '1';
+    tab.addEventListener('dragover', e => {
+      if (!window.__qaDragId) return;
+      e.preventDefault(); tab.classList.add('qa-cat-target');
+    });
+    tab.addEventListener('dragleave', () => tab.classList.remove('qa-cat-target'));
+    tab.addEventListener('drop', e => {
+      e.preventDefault(); tab.classList.remove('qa-cat-target');
+      if (window.__qaDragId) moveQuestionToCat(window.__qaDragId, tab.dataset.catkey);
+    });
+  });
+  // ---- 移动端长按拖动 ----
+  cards.forEach(card => {
+    const header = card.querySelector(':scope > .q-header');
+    if (!header) return;
+    const qid = card.dataset.qid;
+    let timer = null, dragging = false, sx = 0, sy = 0;
+    header.addEventListener('touchstart', e => {
+      if (e.target.closest('.card-edit-btn')) return;
+      const t = e.touches[0];
+      sx = t.clientX; sy = t.clientY; dragging = false;
+      clearTimeout(timer);
+      timer = setTimeout(() => { dragging = true; card.classList.add('qa-dragging'); }, 450);
+    }, {passive: true});
+    header.addEventListener('touchmove', e => {
+      const t = e.touches[0];
+      if (!dragging) {
+        if (Math.abs(t.clientX-sx) > 10 || Math.abs(t.clientY-sy) > 10) clearTimeout(timer);
+        return;
+      }
+      e.preventDefault();
+      const el = document.elementFromPoint(t.clientX, t.clientY);
+      clearQaDragHighlights();
+      const targetCard = el && el.closest ? el.closest('#qaList .q-card') : null;
+      if (targetCard && targetCard !== card) targetCard.classList.add('qa-drag-over');
+      const targetTab = el && el.closest ? el.closest('#qaFilter .toolbar-btn[data-catkey]') : null;
+      if (targetTab) targetTab.classList.add('qa-cat-target');
+    }, {passive: false});
+    header.addEventListener('touchend', e => {
+      clearTimeout(timer);
+      if (!dragging) return;
+      dragging = false;
+      e.preventDefault();  // 防止合成click误触发展开
+      card.classList.remove('qa-dragging');
+      const t = e.changedTouches[0];
+      const el = document.elementFromPoint(t.clientX, t.clientY);
+      const targetCard = el && el.closest ? el.closest('#qaList .q-card') : null;
+      const targetTab = el && el.closest ? el.closest('#qaFilter .toolbar-btn[data-catkey]') : null;
+      clearQaDragHighlights();
+      if (targetTab && targetTab.dataset.catkey) moveQuestionToCat(qid, targetTab.dataset.catkey);
+      else if (targetCard && targetCard !== card && targetCard.dataset.qid) reorderQuestions(qid, targetCard.dataset.qid);
+    });
+  });
+}
+function clearQaDragHighlights() {
+  document.querySelectorAll('.qa-drag-over').forEach(x => x.classList.remove('qa-drag-over'));
+  document.querySelectorAll('.qa-cat-target').forEach(x => x.classList.remove('qa-cat-target'));
 }
 
 // 问题卡片展开/收起（点击标题区，效果同工作内容项目卡片）
@@ -1443,21 +1572,139 @@ function catLabel(cat) {
   const m = {intro:'自我介绍',project:'项目经验',ability:'能力素养',career:'职业发展',custom:'自定义'};
   return m[cat] || cat;
 }
-// 渲染面试问题分类筛选按钮
+// 渲染面试问题分类筛选按钮（横向滑动 + 新增/删除/双击改名/长按拖动）
 function renderQaFilter() {
   const bar = document.getElementById('qaFilter');
+  // 吸顶位置 = 头部实际高度
+  const hdr = document.querySelector('.header');
+  if (hdr) bar.style.top = hdr.offsetHeight + 'px';
   const activeBtn = bar.querySelector('.toolbar-btn.active');
   const activeFilter = activeBtn ? activeBtn.dataset.filter : 'all';
   let html = '<div class="toolbar-btn'+(activeFilter==='all'?' active':'')+'" data-filter="all">全部</div>';
   html += catConfig.map(c => '<div class="toolbar-btn'+(activeFilter===c.key?' active':'')+'" data-filter="'+c.key+'" data-catkey="'+c.key+'">'+c.name+'</div>').join('');
+  html += '<div class="toolbar-btn cat-add" data-filter="__add" title="新增分类">＋</div>';
   bar.innerHTML = html;
-  bar.querySelectorAll('.toolbar-btn').forEach(b => b.addEventListener('click', function() {
-    // 编辑模式下点非「全部」的按钮 -> 重命名
-    if (editMode && this.dataset.catkey) { renameCat(this.dataset.catkey); return; }
-    bar.querySelectorAll('.toolbar-btn').forEach(x => x.classList.remove('active'));
-    this.classList.add('active');
-    applyQFilter();
-  }));
+
+  bar.querySelectorAll('.toolbar-btn').forEach(b => {
+    const f = b.dataset.filter;
+    // 点击：筛选（__add 除外）
+    b.addEventListener('click', function(e) {
+      if (f === '__add') { addQaCat(); return; }
+      if (qaDragState.moved) return;  // 刚完成拖动，不触发筛选
+      bar.querySelectorAll('.toolbar-btn').forEach(x => x.classList.remove('active'));
+      this.classList.add('active');
+      applyQFilter();
+    });
+    // 双击：重命名
+    if (f !== 'all' && f !== '__add') {
+      b.addEventListener('dblclick', function(e) { e.preventDefault(); renameCat(f); });
+      // 桌面端右键：删除
+      b.addEventListener('contextmenu', function(e) { e.preventDefault(); deleteQaCat(f); });
+    }
+  });
+
+  attachQaFilterDrag(bar);
+}
+
+// ============ 面试分类：长按拖动排序 / 长按原地删除 ============
+let qaDragState = { timer: null, moved: false, srcKey: null, dragging: false, startX: 0, startY: 0, el: null };
+
+function attachQaFilterDrag(bar) {
+  bar.querySelectorAll('.toolbar-btn[data-catkey]').forEach(btn => {
+    const key = btn.dataset.catkey;
+    // 桌面端 HTML5 拖动排序
+    btn.draggable = true;
+    btn.addEventListener('dragstart', e => { qaDragState.srcKey = key; qaDragState.moved = false; btn.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
+    btn.addEventListener('dragend', () => { btn.classList.remove('dragging'); bar.querySelectorAll('.toolbar-btn').forEach(x => x.classList.remove('drag-over')); setTimeout(()=>qaDragState.moved=false, 150); });
+    btn.addEventListener('dragover', e => { e.preventDefault(); btn.classList.add('drag-over'); });
+    btn.addEventListener('dragleave', () => btn.classList.remove('drag-over'));
+    btn.addEventListener('drop', e => {
+      e.preventDefault(); btn.classList.remove('drag-over');
+      if (qaDragState.srcKey && qaDragState.srcKey !== key) { reorderQaCats(qaDragState.srcKey, key); qaDragState.moved = true; }
+    });
+    btn.addEventListener('touchstart', function(e) {
+      const t = e.touches[0];
+      qaDragState.startX = t.clientX; qaDragState.startY = t.clientY;
+      qaDragState.moved = false; qaDragState.dragging = false; qaDragState.srcKey = key; qaDragState.el = btn;
+      clearTimeout(qaDragState.timer);
+      qaDragState.timer = setTimeout(() => { qaDragState.dragging = true; btn.classList.add('dragging'); }, 450);
+    }, {passive: true});
+    btn.addEventListener('touchmove', function(e) {
+      if (!qaDragState.dragging) {
+        // 手指移动超过10px，取消长按判定
+        const t = e.touches[0];
+        if (Math.abs(t.clientX-qaDragState.startX) > 10 || Math.abs(t.clientY-qaDragState.startY) > 10) {
+          clearTimeout(qaDragState.timer);
+          qaDragState.moved = true;
+        }
+        return;
+      }
+      e.preventDefault();
+      const el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+      const target = el && el.closest ? el.closest('.toolbar-btn[data-catkey]') : null;
+      bar.querySelectorAll('.toolbar-btn').forEach(x => x.classList.remove('drag-over'));
+      if (target && target !== btn) target.classList.add('drag-over');
+    }, {passive: false});
+    btn.addEventListener('touchend', function(e) {
+      clearTimeout(qaDragState.timer);
+      const wasDragging = qaDragState.dragging;
+      const fingerStill = Math.abs(e.changedTouches[0].clientX-qaDragState.startX) <= 10 &&
+                          Math.abs(e.changedTouches[0].clientY-qaDragState.startY) <= 10;
+      btn.classList.remove('dragging');
+      bar.querySelectorAll('.toolbar-btn').forEach(x => x.classList.remove('drag-over'));
+      if (wasDragging) {
+        qaDragState.moved = true;
+        if (fingerStill) {
+          // 长按后原地松手 -> 删除分类
+          deleteQaCat(key);
+        } else {
+          const overEl = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+          const target = overEl && overEl.closest ? overEl.closest('.toolbar-btn[data-catkey]') : null;
+          if (target && target !== btn && target.dataset.catkey) reorderQaCats(key, target.dataset.catkey);
+        }
+        setTimeout(() => { qaDragState.moved = false; }, 250);
+      }
+      qaDragState.dragging = false;
+    });
+  });
+}
+
+function reorderQaCats(fromKey, toKey) {
+  const fi = catConfig.findIndex(c => c.key === fromKey);
+  const ti = catConfig.findIndex(c => c.key === toKey);
+  if (fi < 0 || ti < 0 || fi === ti) return;
+  const [m] = catConfig.splice(fi, 1);
+  catConfig.splice(ti, 0, m);
+  saveToStorage('cats', catConfig);
+  renderQaFilter(); renderAllQuestions();
+  showToast('分类顺序已调整');
+}
+
+function addQaCat() {
+  openPrompt('新增分类名称', '', function(val) {
+    if (!val) return;
+    const key = 'cat' + Date.now();
+    catConfig.push({key, name: val});
+    saveToStorage('cats', catConfig);
+    renderQaFilter(); renderAllQuestions(); renderAddQCatSelect();
+    addHistory('新增分类', '新增了分类「'+val+'」');
+    showToast('分类已添加 ✅');
+  });
+}
+
+function deleteQaCat(catKey) {
+  const idx = catConfig.findIndex(c => c.key === catKey);
+  if (idx < 0) return;
+  const c = catConfig[idx];
+  const count = (groupsCache[c.key] || []).length;
+  openConfirm('删除分类「'+c.name+'」吗？'+(count ? '该分类下有 '+count+' 个问题，删除分类后这些问题仍会保留并显示在分类列表末尾。' : ''), function(ok) {
+    if (!ok) return;
+    catConfig.splice(idx, 1);
+    saveToStorage('cats', catConfig);
+    renderQaFilter(); renderAllQuestions(); renderAddQCatSelect();
+    addHistory('删除分类', '删除了分类「'+c.name+'」');
+    showToast('分类已删除');
+  }, {title: '删除分类', okText: '删除'});
 }
 function renameCat(catKey) {
   const c = catConfig.find(x => x.key === catKey);
@@ -2080,6 +2327,8 @@ function init() {
   userProjects = loadFromStorage('projects', []);
   userJDs = loadFromStorage('jds', []);
   editHistory = loadFromStorage('history', []);
+  qaOrder = loadFromStorage('qa_order', []);
+  qaCatOverride = loadFromStorage('qa_cat', {});
   loadTabConfig();
   loadCatConfig();
   // 加载工作台名称
@@ -2100,9 +2349,9 @@ function init() {
   // 底部导航绑定
   document.querySelectorAll('.nav-item').forEach(n => n.addEventListener('click', () => switchTab(n.dataset.tab)));
   // 弹窗背景关闭
-  ['tabMgrOverlay','promptOverlay'].forEach(id => {
+  ['promptOverlay'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.addEventListener('click', function(e) { if (e.target === this) { id==='tabMgrOverlay'?closeTabManager():closePrompt(); } });
+    if (el) el.addEventListener('click', function(e) { if (e.target === this) closePrompt(); });
   });
 }
 init();
