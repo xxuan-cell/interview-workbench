@@ -232,6 +232,10 @@ body.edit-mode .collapsible.user-added .collapsible-header::after{content:'🗑�
 .jd-card{margin-bottom:12px}
 .jd-card .card-title{display:flex;justify-content:space-between;align-items:center}
 .jd-card .card-title span{font-size:11px;color:var(--text-light);font-weight:400}
+/* JD卡片：标题行展开/收起 */
+.jd-head{display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer;padding-right:34px}
+.jd-card .jd-arrow{transition:transform .3s;font-size:11px;color:var(--text-light);flex-shrink:0}
+.jd-card.open .jd-arrow{transform:rotate(90deg)}
 
 /* JD分析结果 */
 .jd-analysis{background:#F0F9FF;border:1px solid #BAE6FD;border-radius:12px;padding:14px;margin-top:12px}
@@ -296,6 +300,31 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
     <button onclick="resetAllData()">🔄 恢复全部原始</button>
     <button onclick="addProject()">➕ 添加新项目</button>
   </div>
+
+  <div class="card"><div class="resume-section"><div class="resume-section-title editable" data-key="resume_name">— 简历摘要 —</div>
+    <div class="body-text editable" data-key="resume_meta">6年互联网运营经验 | 大型活动统筹 · 跨部门协作 · SOP建设<br>美团（3.5年）+ 亚马逊（2.5年）<br>核心优势：项目管理思维、体系化沉淀能力、跨文化/跨业务线沟通</div>
+  </div></div>
+  <div class="card"><div class="resume-section"><div class="resume-section-title editable" data-key="resume_title1">核心竞争力</div>
+    <div class="body-text editable" data-key="resume_comp1" style="margin-bottom:8px"><strong>1. 大型活动端到端统筹</strong>：服贸会、招商会等国家级/公司级展会全流程执行，沉淀体系化SOP</div>
+    <div class="body-text editable" data-key="resume_comp2" style="margin-bottom:8px"><strong>2. 跨部门/跨业务线协调</strong>：协调美团10余条业务线、GA/PR/业务多岗人员，推动多方对齐</div>
+    <div class="body-text editable" data-key="resume_comp3" style="margin-bottom:8px"><strong>3. 流程建设与SOP沉淀</strong>：搭建运营工具包，将个人经验转化为部门长期工作法</div>
+    <div class="body-text editable" data-key="resume_comp4" style="margin-bottom:8px"><strong>4. 团队赋能与知识管理</strong>：亚马逊Coach经验，培训+FAQ迭代+质量管控闭环</div>
+    <div class="body-text editable" data-key="resume_comp5"><strong>5. 数据驱动运营</strong>：APP主题页投放、数据复盘、阅读率优化</div>
+  </div></div>
+  <div class="card"><div class="resume-section"><div class="resume-section-title editable" data-key="resume_title2">工作经历</div>
+    <div class="timeline-item">
+      <div class="timeline-date">2023.01 — 2025.06</div>
+      <div class="timeline-title">公共事务部 · 综合运营（外包）</div>
+      <div class="timeline-company">美团</div>
+      <div class="body-text editable" data-key="resume_exp1">• 服贸会美团展区执行总负责人（2023/2025两届），统筹10+业务线联合参展<br>• 4场供应商招商会组织执行，每场到场300+，促成合作~500家<br>• 美团APP主题页搭建投放（年货节、电影节等5+项目）<br>• 搭建部门运营工具包，沉淀SOP推动为部门长期工作法<br>• 独立管理5+核心供应商采购及年度结算<br>• 研究院内部群发号运营，内容分层推送阅读率+4%</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-date">更早 · 2.5年</div>
+      <div class="timeline-title">卖家端客服中心 · Coach</div>
+      <div class="timeline-company">亚马逊</div>
+      <div class="body-text editable" data-key="resume_exp2">• 处理一线客服升级疑难case，提供解决方案闭环<br>• 新人实操指导 + 成熟员工再培训<br>• 总结共性问题优化操作流程，迭代FAQ知识库<br>• 与管理者推进标准政策执行，降低错误率与重复进线率</div>
+    </div>
+  </div></div>
 
   <div class="card"><div class="card-title editable" data-key="work_overview_title">工作经历总览</div>
     <div class="timeline-item">
@@ -409,36 +438,6 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
 </div>
 
 <!-- ============ 简历 ============ -->
-<div class="content-area" id="tab-resume">
-  <div class="reset-bar"><button onclick="resetAllData()">🔄 恢复全部原始</button></div>
-  <div class="card">
-    <div class="resume-header">
-      <div class="resume-name editable" data-key="resume_name">— 简历摘要 —</div>
-      <div class="resume-meta editable" data-key="resume_meta">6年互联网运营经验 | 大型活动统筹 · 跨部门协作 · SOP建设<br>美团（3.5年）+ 亚马逊（2.5年）<br>核心优势：项目管理思维、体系化沉淀能力、跨文化/跨业务线沟通</div>
-    </div>
-  </div>
-  <div class="card"><div class="resume-section"><div class="resume-section-title editable" data-key="resume_title1">核心竞争力</div>
-    <div class="body-text editable" data-key="resume_comp1" style="margin-bottom:8px"><strong>1. 大型活动端到端统筹</strong>：服贸会、招商会等国家级/公司级展会全流程执行，沉淀体系化SOP</div>
-    <div class="body-text editable" data-key="resume_comp2" style="margin-bottom:8px"><strong>2. 跨部门/跨业务线协调</strong>：协调美团10余条业务线、GA/PR/业务多岗人员，推动多方对齐</div>
-    <div class="body-text editable" data-key="resume_comp3" style="margin-bottom:8px"><strong>3. 流程建设与SOP沉淀</strong>：搭建运营工具包，将个人经验转化为部门长期工作法</div>
-    <div class="body-text editable" data-key="resume_comp4" style="margin-bottom:8px"><strong>4. 团队赋能与知识管理</strong>：亚马逊Coach经验，培训+FAQ迭代+质量管控闭环</div>
-    <div class="body-text editable" data-key="resume_comp5"><strong>5. 数据驱动运营</strong>：APP主题页投放、数据复盘、阅读率优化</div>
-  </div></div>
-  <div class="card"><div class="resume-section"><div class="resume-section-title editable" data-key="resume_title2">工作经历</div>
-    <div class="timeline-item">
-      <div class="timeline-date">2023.01 — 2025.06</div>
-      <div class="timeline-title">公共事务部 · 综合运营（外包）</div>
-      <div class="timeline-company">美团</div>
-      <div class="body-text editable" data-key="resume_exp1">• 服贸会美团展区执行总负责人（2023/2025两届），统筹10+业务线联合参展<br>• 4场供应商招商会组织执行，每场到场300+，促成合作~500家<br>• 美团APP主题页搭建投放（年货节、电影节等5+项目）<br>• 搭建部门运营工具包，沉淀SOP推动为部门长期工作法<br>• 独立管理5+核心供应商采购及年度结算<br>• 研究院内部群发号运营，内容分层推送阅读率+4%</div>
-    </div>
-    <div class="timeline-item">
-      <div class="timeline-date">更早 · 2.5年</div>
-      <div class="timeline-title">卖家端客服中心 · Coach</div>
-      <div class="timeline-company">亚马逊</div>
-      <div class="body-text editable" data-key="resume_exp2">• 处理一线客服升级疑难case，提供解决方案闭环<br>• 新人实操指导 + 成熟员工再培训<br>• 总结共性问题优化操作流程，迭代FAQ知识库<br>• 与管理者推进标准政策执行，降低错误率与重复进线率</div>
-    </div>
-  </div></div>
-</div>
 
 <!-- ============ 岗位JD ============ -->
 <div class="content-area" id="tab-jd">
@@ -530,10 +529,14 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
 
 <!-- ===== 自定义确认弹窗（替代原生 confirm，解决 PWA 模式下不弹出） ===== -->
 <div class="edit-overlay" id="confirmOverlay">
-  <div class="panel"><h3 id="confirmTitle">确认</h3>
+  <div class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h3 id="confirmTitle" style="margin:0;font-size:15px;color:var(--secondary)">确认</h3>
+      <button id="confirmX" onclick="closeConfirm(false)" style="display:none;background:none;border:none;font-size:18px;color:var(--text-light);cursor:pointer;padding:2px 6px;line-height:1">✕</button>
+    </div>
     <div id="confirmMsg" style="font-size:13px;color:var(--text-sub);line-height:1.8;margin-bottom:14px;white-space:pre-wrap"></div>
     <div class="panel-actions">
-      <button class="btn-cancel" onclick="closeConfirm(false)">取消</button>
+      <button class="btn-cancel" id="confirmCancelBtn" onclick="closeConfirm(false)">取消</button>
       <button class="btn-save" id="confirmOkBtn" onclick="closeConfirm(true)">确定</button>
     </div>
   </div>
@@ -662,7 +665,6 @@ let historyFilter = 'all';
 // ============ 板块配置（可拖动排序 / 重命名 / 新增） ============
 const DEFAULT_TABS = [
   {key:'work',   name:'工作内容', navName:'工作', icon:'📋', builtin:true},
-  {key:'resume', name:'简历',     navName:'简历', icon:'📄', builtin:true},
   {key:'jd',     name:'岗位JD',   navName:'岗位', icon:'🎯', builtin:true},
   {key:'qa',     name:'面试问题', navName:'面试', icon:'💬', builtin:true}
 ];
@@ -682,8 +684,8 @@ let qaOrder = [];      // 问题全局显示顺序（问题id数组）
 let qaCatOverride = {}; // 问题分类覆盖 {qid: catKey}
 
 // ============ 版本与在线更新 ============
-const APP_VERSION = '5.9';
-const APP_TAG = 'v5.9';  // 当前发布标签，发新版时同步更新
+const APP_VERSION = '6.0';
+const APP_TAG = 'v6.0';  // 当前发布标签，发新版时同步更新
 const REPO = 'xxuan-cell/interview-workbench';
 
 // 多源候选：按可靠性排序，逐个尝试
@@ -867,7 +869,7 @@ function showVersionInfo() {
     localStorage.removeItem('iw_app_ver');
     showToast('已清除本地缓存版本，即将重新加载');
     setTimeout(() => location.replace(location.pathname + '?r=' + Date.now()), 900);
-  }, {title: 'ℹ️ 版本信息', okText: '清除缓存版本'});
+  }, {title: 'ℹ️ 版本信息', okText: '清除缓存版本', closeX: true});
 }
 function closeHistory() { document.getElementById('historyPanel').classList.remove('show'); }
 function filterHistory(type, btn) {
@@ -1118,6 +1120,10 @@ function loadTabConfig() {
   } else {
     tabConfig = DEFAULT_TABS.map(t => ({...t}));
   }
+  // 「简历」板块已并入「工作」，从配置中移除
+  const before = tabConfig.length;
+  tabConfig = tabConfig.filter(t => t.key !== 'resume');
+  if (tabConfig.length !== before) saveTabs();
 }
 function loadCatConfig() {
   const saved = loadFromStorage('cats', null);
@@ -1369,6 +1375,9 @@ function openConfirm(msg, cb, opt) {
   const ok = document.getElementById('confirmOkBtn');
   ok.textContent = opt.okText || '确定';
   ok.style.background = opt.danger === false ? '' : '#DC2626';
+  // closeX: 取消按钮替换为右上角✕
+  document.getElementById('confirmX').style.display = opt.closeX ? '' : 'none';
+  document.getElementById('confirmCancelBtn').style.display = opt.closeX ? 'none' : '';
   document.getElementById('confirmOverlay').classList.add('show');
 }
 function closeConfirm(result) {
@@ -1821,18 +1830,23 @@ function renderJDs() {
   container.innerHTML = userJDs.map((jd, i) => {
     const analysisHtml = jd.analysis ? renderJDAnalysisHTML(ensureAnalysisModules(jd.analysis, jd)) : '';
     return '<div class="card jd-card" id="jd-card-'+i+'" data-jdidx="'+i+'">'+
-      '<div class="card-title editable" data-key="jd_title_'+i+'">🎯 '+(jd.title||'未命名岗位')+'<span>'+(jd.time||'')+'</span></div>'+
+      // 标题行：点击展开/收起（箭头指示），点标题文字仍可编辑
+      '<div class="jd-head" onclick="toggleJdCard(this, event)"><div class="card-title editable" data-key="jd_title_'+i+'" style="flex:1;margin-bottom:0">🎯 '+(jd.title||'未命名岗位')+'<span>'+(jd.time||'')+'</span></div><span class="jd-arrow">▶</span></div>'+
       // 折叠区：JD正文 + 操作 + 分析
       '<div class="card-collapse-body">'+
         '<div class="body-text editable" data-key="jd_'+i+'">'+jd.content.replace(/\n/g,'<br>')+'</div>'+
         '<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap"><button class="analyze-btn" onclick="analyzeJD('+i+')">🔍 智能匹配分析</button><button class="tag" style="cursor:pointer;background:#FEE2E2;color:#DC2626" onclick="deleteJD('+i+')">🗑️ 删除</button></div>'+
         analysisHtml+
       '</div>'+
-      // 需求3+4：底部展开/收起条
-      '<div class="card-expand-bar" onclick="toggleCardExpand(this)"><span class="ceb-text">点击展开</span><span class="ceb-arrow">▼</span></div>'+
     '</div>';
   }).join('');
   initEditable();
+}
+
+// JD卡片标题行展开/收起（点击标题文字=编辑，点行内其余位置=展开/收起）
+function toggleJdCard(head, ev) {
+  if (ev && ev.target && ev.target.closest && ev.target.closest('.editable, .card-edit-btn, button')) return;
+  head.closest('.jd-card').classList.toggle('open');
 }
 
 // 通用卡片展开/收起（展开条在卡片底部）
