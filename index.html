@@ -56,7 +56,9 @@ body.edit-mode .custom-card .cc-del{display:block}
 .add-card-btn:active{background:#F9FAFB}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .card{background:var(--card-bg);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.05);position:relative}
-.card-title{font-size:16px;font-weight:700;color:var(--secondary);margin-bottom:12px;display:flex;align-items:center;gap:8px;padding-right:52px}
+.card-title{font-size:16px;font-weight:700;color:var(--secondary);margin-bottom:12px;display:flex;align-items:center;gap:8px;padding-right:38px}
+.card-title:has(.jd-refresh-btn){padding-right:0}
+.card-title .jd-refresh-btn{margin-left:auto}
 /* 卡片级编辑按钮 */
 .card-edit-btn{position:absolute;top:10px;right:10px;z-index:5;font-size:10px;background:#F3F4F6;color:var(--text-sub);border:1px solid var(--border);padding:3px 8px;border-radius:10px;font-weight:600;cursor:pointer;line-height:1.4}
 .card-edit-btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
@@ -106,6 +108,9 @@ body.edit-mode .custom-card .cc-del{display:block}
 .q-tags{display:flex;gap:6px;margin-top:6px}
 .q-expand-arrow{flex-shrink:0;font-size:12px;color:var(--text-light);transition:transform .25s;margin-top:4px}
 .q-card.open .q-expand-arrow{transform:rotate(180deg)}
+.q-card .q-card-edit-btn{flex-shrink:0;margin-left:4px}
+.q-card.card-editing{box-shadow:0 0 0 2px var(--accent)}
+.q-card.card-editing .editable{border:1px dashed rgba(255,107,53,.5);border-radius:4px;padding:1px 3px;margin:-1px -3px}
 .q-body{padding:14px 16px;display:none}
 .q-card.open .q-body{display:block;animation:slideDown .25s ease}
 /* 分类汇总卡片 */
@@ -430,7 +435,7 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
 
   <!-- JD 汇总卡片 -->
   <div class="card jd-summary-card" id="jdSummaryCard">
-    <div class="card-title">📑 岗位速览
+    <div class="card-title"><span class="editable" data-key="jd_summary_title">📑 岗位速览</span>
       <button class="jd-refresh-btn" onclick="refreshJdSummary()" title="刷新列表">🔄</button>
     </div>
     <div id="jdSummaryList"></div>
@@ -613,58 +618,86 @@ const DEFAULT_CATS = [
 let catConfig = [];
 
 // ============ 版本与在线更新 ============
-const APP_VERSION = '5.0';
-const UPDATE_URL = 'https://cdn.jsdelivr.net/gh/xxuan-cell/interview-workbench@master/index.html';
-const UPDATE_URL_BACKUP = 'https://github.com/xxuan-cell/interview-workbench/raw/master/index.html';
+const APP_VERSION = '5.1';
+const APP_TAG = 'v5.1';  // 当前发布标签，发新版时同步更新
+const REPO = 'xxuan-cell/interview-workbench';
+
+// 多源候选：按可靠性排序，逐个尝试
+function getUpdateSources() {
+  const burst = '?t=' + Date.now();
+  return [
+    // 1. GitHub raw（无 CDN 缓存，最实时）
+    'https://raw.githubusercontent.com/' + REPO + '/master/index.html' + burst,
+    // 2. jsDelivr 用 tag 引用（tag 变更后会刷新）
+    'https://cdn.jsdelivr.net/gh/' + REPO + '@' + APP_TAG + '/index.html' + burst,
+    // 3. jsDelivr master 分支（可能有缓存，最后兜底）
+    'https://cdn.jsdelivr.net/gh/' + REPO + '@master/index.html' + burst,
+    // 4. GitHub Pages
+    'https://' + REPO.split('/')[0] + '.github.io/' + REPO.split('/')[1] + '/index.html' + burst
+  ];
+}
+
+function parseVer(v) { return (v || '0').split('.').map(n => parseInt(n) || 0); }
+function isNewer(remote, local) {
+  const a = parseVer(remote), b = parseVer(local);
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    if ((a[i]||0) > (b[i]||0)) return true;
+    if ((a[i]||0) < (b[i]||0)) return false;
+  }
+  return false;
+}
 
 async function checkUpdate() {
   const btn = document.getElementById('updateBtn');
   btn.textContent = '⏳ 检查中...';
   btn.disabled = true;
-  
-  try {
-    // 从CDN获取最新版本号
-    const resp = await fetch(UPDATE_URL + '?t=' + Date.now(), {cache: 'no-store'});
-    if (!resp.ok) throw new Error('CDN不可用，尝试备用源...');
-    const html = await resp.text();
-    const m = html.match(/const APP_VERSION = '([^']+)'/);
-    const remoteVer = m ? m[1] : null;
-    
-    if (!remoteVer) {
-      // 如果没读到版本号，直接对比内容
-      await doUpdate(html);
-      return;
-    }
-    
-    if (remoteVer !== APP_VERSION) {
-      showToast('发现新版本 v' + remoteVer + '，正在更新...');
-      await doUpdate(html);
-    } else {
-      showToast('已是最新版本 v' + APP_VERSION + ' ✅');
-      btn.textContent = '🔄 更新';
-      btn.disabled = false;
-    }
-  } catch(e) {
-    // 备用源
+
+  const sources = getUpdateSources();
+  let best = null;      // {ver, html}
+  let tried = 0;
+
+  for (const url of sources) {
+    tried++;
     try {
-      const resp2 = await fetch(UPDATE_URL_BACKUP + '?t=' + Date.now(), {cache: 'no-store'});
-      if (!resp2.ok) throw e;
-      const html2 = await resp2.text();
-      await doUpdate(html2);
-    } catch(e2) {
-      showToast('更新失败，请稍后重试');
-      btn.textContent = '🔄 更新';
-      btn.disabled = false;
-    }
+      const resp = await fetch(url, {cache: 'no-store', mode: 'cors'});
+      if (!resp.ok) continue;
+      const html = await resp.text();
+      const m = html.match(/const APP_VERSION = '([^']+)'/);
+      if (!m) continue;
+      const ver = m[1];
+      if (!best || isNewer(ver, best.ver)) best = {ver, html};
+      // 如果已拿到比当前新的，直接用，不必再试其他源
+      if (isNewer(ver, APP_VERSION)) break;
+    } catch (e) { /* 这个源失败，继续下一个 */ }
+  }
+
+  if (!best) {
+    showToast('检查失败：网络异常，请稍后重试');
+    btn.textContent = '🔄 升级App';
+    btn.disabled = false;
+    return;
+  }
+
+  if (isNewer(best.ver, APP_VERSION)) {
+    showToast('发现新版本 v' + best.ver + '，正在升级...');
+    setTimeout(() => doUpdate(best.html), 800);
+  } else {
+    showToast('已是最新版本 v' + APP_VERSION + ' ✅');
+    btn.textContent = '🔄 升级App';
+    btn.disabled = false;
   }
 }
 
 async function doUpdate(html) {
-  // 提取新页面的 <script> 内容，但保留 localStorage 数据
-  // 方案：用新HTML完全替换当前页面，localStorage数据不受影响（同一域名）
-  const blob = new Blob([html], {type: 'text/html'});
-  const url = URL.createObjectURL(blob);
-  window.location.replace(url);
+  // 用 document.write 方式原地替换，保持当前 URL 不变（不影响 localStorage / 云同步）
+  try {
+    document.open();
+    document.write(html);
+    document.close();
+  } catch (e) {
+    // 极端降级：刷新页面
+    location.reload();
+  }
 }
 
 // ============ 关键词库与能力标签 ============
@@ -809,6 +842,7 @@ function toggleEditMode() { toggleTabEdit(document.querySelector('.tab-item.acti
 
 // ============ 卡片级编辑 ============
 function injectCardEditBtns() {
+  // 通用卡片
   document.querySelectorAll('.card').forEach(card => {
     if (card.querySelector(':scope > .card-edit-btn')) return;
     if (!card.querySelector('.editable')) return;  // 无内容可编辑则不加
@@ -824,6 +858,26 @@ function injectCardEditBtns() {
       if (on) showToast('已开启本卡片编辑，点文字即可修改');
     };
     card.appendChild(btn);
+  });
+  // 面试问题卡片（.q-card 结构，编辑按钮放标题区右上角）
+  document.querySelectorAll('.q-card').forEach(card => {
+    const header = card.querySelector(':scope > .q-header');
+    if (!header) return;
+    if (header.querySelector('.q-card-edit-btn')) return;
+    if (!card.querySelector('.editable')) return;
+    const btn = document.createElement('button');
+    btn.className = 'card-edit-btn q-card-edit-btn';
+    btn.style.position = 'static';
+    btn.textContent = '✎';
+    btn.onclick = function(ev) {
+      ev.stopPropagation();
+      card.classList.toggle('card-editing');
+      const on = card.classList.contains('card-editing');
+      btn.classList.toggle('on', on);
+      btn.textContent = on ? '✓' : '✎';
+      if (on) { card.classList.add('open'); showToast('已开启本问题编辑'); }
+    };
+    header.appendChild(btn);
   });
   // 折叠面板（项目卡片）也支持
   document.querySelectorAll('.collapsible').forEach(card => {
