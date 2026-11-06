@@ -55,8 +55,24 @@ body.edit-mode .custom-card .cc-del{display:block}
 .add-card-btn{width:100%;padding:12px;border:1px dashed var(--border);background:#fff;border-radius:var(--radius);color:var(--text-sub);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:12px}
 .add-card-btn:active{background:#F9FAFB}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.card{background:var(--card-bg);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
-.card-title{font-size:16px;font-weight:700;color:var(--secondary);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card{background:var(--card-bg);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.05);position:relative}
+.card-title{font-size:16px;font-weight:700;color:var(--secondary);margin-bottom:12px;display:flex;align-items:center;gap:8px;padding-right:52px}
+/* 卡片级编辑按钮 */
+.card-edit-btn{position:absolute;top:10px;right:10px;z-index:5;font-size:10px;background:#F3F4F6;color:var(--text-sub);border:1px solid var(--border);padding:3px 8px;border-radius:10px;font-weight:600;cursor:pointer;line-height:1.4}
+.card-edit-btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.card.card-editing{box-shadow:0 0 0 2px var(--accent),0 2px 8px rgba(255,107,53,0.15)}
+.card.card-editing .editable{border:1px dashed rgba(255,107,53,0.5);border-radius:4px;padding:1px 3px;margin:-1px -3px}
+.card .collapsible .card-edit-btn{display:none}
+/* JD 汇总卡片 */
+.jd-refresh-btn{margin-left:auto;font-size:12px;width:26px;height:26px;border-radius:50%;border:1px solid var(--border);background:#F9FAFB;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.jd-refresh-btn:active{background:var(--primary)}
+.jd-sum-item{display:flex;align-items:center;gap:8px;padding:10px 10px;border-radius:8px;background:#F8F9FB;margin-bottom:6px;cursor:pointer;transition:background .15s}
+.jd-sum-item:active{background:#FFF3E0}
+.jd-sum-item .js-idx{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--secondary);color:var(--primary);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.jd-sum-item .js-title{flex:1;font-size:13px;color:var(--text-main);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jd-sum-item .js-score{flex-shrink:0;font-size:11px;color:var(--accent);font-weight:700}
+.jd-sum-item .js-arrow{flex-shrink:0;font-size:11px;color:var(--text-light)}
+.jd-sum-empty{text-align:center;color:var(--text-light);font-size:12px;padding:16px}
 .section-label{font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px;display:flex;align-items:center;gap:6px}
 .section-label::before{content:'';width:3px;height:14px;background:var(--primary);border-radius:2px}
 .info-row{display:flex;margin-bottom:6px;font-size:13px;line-height:1.7}
@@ -84,11 +100,26 @@ body.edit-mode .custom-card .cc-del{display:block}
 .collapsible.open .collapsible-body{display:block;animation:slideDown .3s ease}
 @keyframes slideDown{from{opacity:0;max-height:0}to{opacity:1;max-height:3000px}}
 .q-card{background:var(--card-bg);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
-.q-header{padding:14px 16px;background:linear-gradient(135deg,#FFF8E1 0%,#FFFDE7 100%);display:flex;gap:10px;align-items:flex-start}
+.q-header{padding:14px 16px;background:linear-gradient(135deg,#FFF8E1 0%,#FFFDE7 100%);display:flex;gap:10px;align-items:flex-start;cursor:pointer}
 .q-num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--secondary);color:var(--primary);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
 .q-title{font-size:14px;font-weight:600;color:var(--text-main);line-height:1.5;flex:1}
 .q-tags{display:flex;gap:6px;margin-top:6px}
-.q-body{padding:14px 16px}
+.q-expand-arrow{flex-shrink:0;font-size:12px;color:var(--text-light);transition:transform .25s;margin-top:4px}
+.q-card.open .q-expand-arrow{transform:rotate(180deg)}
+.q-body{padding:14px 16px;display:none}
+.q-card.open .q-body{display:block;animation:slideDown .25s ease}
+/* 分类汇总卡片 */
+.qa-group-card{background:#EEF6FF;border:1px solid #CCE4FF;border-radius:var(--radius);padding:12px 14px;margin-bottom:10px}
+.qa-group-head{display:flex;align-items:center;gap:8px;cursor:pointer}
+.qg-name{font-size:14px;font-weight:700;color:#0369A1;flex:1}
+.qg-count{font-size:11px;background:#0369A1;color:#fff;padding:2px 8px;border-radius:10px;font-weight:600}
+.qg-toggle{font-size:11px;color:#0369A1;font-weight:600}
+.qa-group-list{display:none;margin-top:10px;border-top:1px dashed #CCE4FF;padding-top:8px}
+.qa-group-card.open .qa-group-list{display:block}
+.qg-item{display:flex;gap:8px;align-items:baseline;padding:5px 4px;font-size:12px;color:var(--text-sub);cursor:pointer;border-radius:6px}
+.qg-item:active{background:#E0F0FF}
+.qg-idx{flex-shrink:0;color:#0369A1;font-weight:700;font-size:11px;min-width:16px}
+.qg-txt{flex:1;line-height:1.5;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .q-section-label{font-size:11px;font-weight:700;color:var(--accent);margin-bottom:6px;display:flex;align-items:center;gap:4px}
 .q-answer{font-size:13px;color:var(--text-main);line-height:1.8;background:#F8F9FB;padding:10px 12px;border-radius:8px;margin-bottom:10px}
 .q-thought{font-size:12px;color:var(--text-sub);line-height:1.7;background:#FFF3E0;padding:10px 12px;border-radius:8px;border-left:3px solid var(--accent)}
@@ -217,8 +248,8 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
     <p class="ws-sub" id="wsSub" onclick="editWsSub()">项目管理思维 · 结构化备战</p>
   </div>
   <div class="header-btns">
-    <button class="hbtn" id="updateBtn" onclick="checkUpdate()">🔄 更新</button>
-    <button class="hbtn" onclick="openSync()">☁️ 同步</button>
+    <button class="hbtn" id="updateBtn" onclick="checkUpdate()">🔄 升级App</button>
+    <button class="hbtn" onclick="openSync()">☁️ 数据同步</button>
     <button class="hbtn" onclick="showHistory()">📜 记录</button>
   </div>
 </div>
@@ -239,7 +270,7 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
     <button onclick="addProject()">➕ 添加新项目</button>
   </div>
 
-  <div class="card"><div class="card-title">工作经历总览</div>
+  <div class="card"><div class="card-title editable" data-key="work_overview_title">工作经历总览</div>
     <div class="timeline-item">
       <div class="timeline-date">2023.01 — 2025.06 | 3.5年</div>
       <div class="timeline-title">公共事务部 · 综合运营（外包）</div>
@@ -360,14 +391,14 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
       <div class="resume-meta editable" data-key="resume_meta">6年互联网运营经验 | 大型活动统筹 · 跨部门协作 · SOP建设<br>美团（3.5年）+ 亚马逊（2.5年）<br>核心优势：项目管理思维、体系化沉淀能力、跨文化/跨业务线沟通</div>
     </div>
   </div>
-  <div class="card"><div class="resume-section"><div class="resume-section-title">核心竞争力</div>
+  <div class="card"><div class="resume-section"><div class="resume-section-title editable" data-key="resume_title1">核心竞争力</div>
     <div class="body-text editable" data-key="resume_comp1" style="margin-bottom:8px"><strong>1. 大型活动端到端统筹</strong>：服贸会、招商会等国家级/公司级展会全流程执行，沉淀体系化SOP</div>
     <div class="body-text editable" data-key="resume_comp2" style="margin-bottom:8px"><strong>2. 跨部门/跨业务线协调</strong>：协调美团10余条业务线、GA/PR/业务多岗人员，推动多方对齐</div>
     <div class="body-text editable" data-key="resume_comp3" style="margin-bottom:8px"><strong>3. 流程建设与SOP沉淀</strong>：搭建运营工具包，将个人经验转化为部门长期工作法</div>
     <div class="body-text editable" data-key="resume_comp4" style="margin-bottom:8px"><strong>4. 团队赋能与知识管理</strong>：亚马逊Coach经验，培训+FAQ迭代+质量管控闭环</div>
     <div class="body-text editable" data-key="resume_comp5"><strong>5. 数据驱动运营</strong>：APP主题页投放、数据复盘、阅读率优化</div>
   </div></div>
-  <div class="card"><div class="resume-section"><div class="resume-section-title">工作经历</div>
+  <div class="card"><div class="resume-section"><div class="resume-section-title editable" data-key="resume_title2">工作经历</div>
     <div class="timeline-item">
       <div class="timeline-date">2023.01 — 2025.06</div>
       <div class="timeline-title">公共事务部 · 综合运营（外包）</div>
@@ -389,12 +420,20 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
   <div class="reset-bar"><button onclick="resetAllData()">🔄 恢复全部原始</button></div>
 
   <div class="card jd-input-area">
-    <div class="card-title">🎯 添加意向岗位JD</div>
+    <div class="card-title editable" data-key="jd_input_title">🎯 添加意向岗位JD</div>
     <textarea id="jdInput" placeholder="请在此粘贴意向岗位的JD内容…&#10;&#10;例如：&#10;岗位名称：政府事务运营经理&#10;岗位职责：&#10;1. 负责…&#10;2. 负责…&#10;任职要求：&#10;1. 本科及以上学历…&#10;2. 5年以上…"></textarea>
     <div class="jd-save-row">
       <input id="jdTitleInput" placeholder="岗位名称（如：政府事务运营经理）">
       <button onclick="saveJD()">💾 保存</button>
     </div>
+  </div>
+
+  <!-- JD 汇总卡片 -->
+  <div class="card jd-summary-card" id="jdSummaryCard">
+    <div class="card-title">📑 岗位速览
+      <button class="jd-refresh-btn" onclick="refreshJdSummary()" title="刷新列表">🔄</button>
+    </div>
+    <div id="jdSummaryList"></div>
   </div>
 
   <div id="jdList"></div>
@@ -475,10 +514,13 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
 
 <!-- ===== 云同步弹窗 ===== -->
 <div class="edit-overlay" id="syncOverlay">
-  <div class="panel"><h3>☁️ 多设备云同步</h3>
+  <div class="panel"><h3>☁️ 数据同步（手机 ↔ Mac 内容互通）</h3>
+    <div style="font-size:12px;background:#FFF8E1;border-left:3px solid var(--primary);padding:8px 10px;border-radius:0 6px 6px 0;color:var(--text-sub);line-height:1.7;margin-bottom:12px">
+      ⚠️ <strong>这不是升级App。</strong>这里只负责搬运你填的<strong>内容</strong>（简历、JD、问答等）。<br>
+      想升级界面和功能，请点顶部的「🔄 升级App」。
+    </div>
     <div style="font-size:12px;color:var(--text-sub);line-height:1.8;margin-bottom:10px">
-      在<strong>手机</strong>上点「上传到云端」会生成一个<strong>同步码</strong>，把它复制到 <strong>Mac</strong> 上打开本页面 → 点「☁️ 同步」→ 粘贴同步码 → 点「从云端下载」，两边数据就一致了。<br>
-      之后任何一台设备改了内容，改完后上传，另一台下载即可保持同步。
+      在<strong>手机</strong>上点「上传到云端」会生成一个<strong>同步码</strong>，把它复制到 <strong>Mac</strong> 上打开本页面 → 点「☁️ 数据同步」→ 粘贴同步码 → 点「从云端下载」，两边内容就一致了。
     </div>
     <input id="syncCodeInput" placeholder="粘贴同步码（第一次使用可留空）">
     <div id="syncStatus" style="font-size:12px;color:var(--text-light);margin-bottom:8px;min-height:18px"></div>
@@ -571,7 +613,7 @@ const DEFAULT_CATS = [
 let catConfig = [];
 
 // ============ 版本与在线更新 ============
-const APP_VERSION = '4.0';
+const APP_VERSION = '5.0';
 const UPDATE_URL = 'https://cdn.jsdelivr.net/gh/xxuan-cell/interview-workbench@master/index.html';
 const UPDATE_URL_BACKUP = 'https://github.com/xxuan-cell/interview-workbench/raw/master/index.html';
 
@@ -765,6 +807,48 @@ function applyTabEditUI() {
 
 function toggleEditMode() { toggleTabEdit(document.querySelector('.tab-item.active')?.dataset.tab || 'work'); }
 
+// ============ 卡片级编辑 ============
+function injectCardEditBtns() {
+  document.querySelectorAll('.card').forEach(card => {
+    if (card.querySelector(':scope > .card-edit-btn')) return;
+    if (!card.querySelector('.editable')) return;  // 无内容可编辑则不加
+    const btn = document.createElement('button');
+    btn.className = 'card-edit-btn';
+    btn.textContent = '✎';
+    btn.onclick = function(ev) {
+      ev.stopPropagation();
+      card.classList.toggle('card-editing');
+      const on = card.classList.contains('card-editing');
+      btn.classList.toggle('on', on);
+      btn.textContent = on ? '✓' : '✎';
+      if (on) showToast('已开启本卡片编辑，点文字即可修改');
+    };
+    card.appendChild(btn);
+  });
+  // 折叠面板（项目卡片）也支持
+  document.querySelectorAll('.collapsible').forEach(card => {
+    if (card.querySelector(':scope > .collapsible-header .card-edit-btn')) return;
+    if (!card.querySelector('.editable')) return;
+    const header = card.querySelector(':scope > .collapsible-header');
+    if (!header) return;
+    const btn = document.createElement('button');
+    btn.className = 'card-edit-btn';
+    btn.style.position = 'static';
+    btn.style.marginLeft = 'auto';
+    btn.textContent = '✎';
+    btn.onclick = function(ev) {
+      ev.stopPropagation();
+      card.classList.toggle('editing');
+      const on = card.classList.contains('editing');
+      btn.classList.toggle('on', on);
+      btn.textContent = on ? '✓' : '✎';
+      // 编辑时自动展开
+      if (on) card.classList.add('open');
+    };
+    header.insertBefore(btn, header.querySelector('.arrow'));
+  });
+}
+
 // ============ 工作台名称自定义 ============
 function editWsName() {
   if (!editMode) { openPrompt('修改工作台名称', document.getElementById('wsName').textContent, saveWsName); return; }
@@ -786,11 +870,13 @@ function editWsSub() {
   });
 }
 
-// ============ 编辑弹窗 ============
+// ============ 编辑弹窗（支持卡片级/板块级） ============
 document.addEventListener('click', function(e) {
-  if (!editMode) return;
   const el = e.target.closest('.editable');
   if (!el) return;
+  // 允许编辑的条件：全局编辑模式 或 所在卡片处于卡片编辑态
+  const inEditingCard = el.closest('.card-editing, .collapsible.editing');
+  if (!editMode && !inEditingCard) return;
   const key = el.dataset.key;
   if (!key) return;
   currentEditKey = key; currentEditEl = el;
@@ -838,6 +924,7 @@ function initEditable() {
     const saved = localStorage.getItem('iw_'+key);
     if (saved !== null) el.innerHTML = saved.replace(/\n/g, '<br>');
   });
+  if (typeof injectCardEditBtns === 'function') injectCardEditBtns();
 }
 
 // ============ Tab ============
@@ -1089,8 +1176,61 @@ function showToast(msg) {
 function renderAllQuestions() {
   const all = [...presetQuestions, ...userQuestions.map((q,i) => ({...q, id:'uq_'+i, userAdded:true}))];
   const container = document.getElementById('qaList');
-  container.innerHTML = all.map((q, idx) => '<div class="q-card'+(q.userAdded?' user-added':'')+'" data-cat="'+q.cat+'" data-qid="'+q.id+'"><div class="q-header"><div class="q-num">'+(idx+1)+'</div><div style="flex:1"><div class="q-title editable" data-key="'+q.id+'_title">'+q.title+'</div><div class="q-tags"><span class="tag tag-blue">'+catLabel(q.cat)+'</span>'+(q.userAdded?'<span class="tag tag-green">自定义</span>':'')+'</div></div>'+(q.userAdded?'<div class="q-delete" onclick="event.stopPropagation();deleteQuestion(\''+q.id+'\')">🗑️</div>':'')+'</div><div class="q-body"><div class="q-section-label">参考答案</div><div class="q-answer editable" data-key="'+q.id+'_answer">'+(q.answer||'（待补充）')+'</div><div class="q-section-label">答题思路</div><div class="q-thought editable" data-key="'+q.id+'_thought">'+(q.thought||'（待补充）')+'</div></div></div>').join('');
+  // 按分类分组，生成每个分类前的汇总卡片
+  const groups = {};
+  all.forEach((q, idx) => {
+    (groups[q.cat] = groups[q.cat] || []).push({q, idx});
+  });
+  // 按 catConfig 顺序输出各分类的汇总卡片 + 问题卡片
+  let html = '';
+  const orderedCats = catConfig.map(c => c.key).filter(k => groups[k]);
+  // 未在 catConfig 里的分类补在后面
+  Object.keys(groups).forEach(k => { if (!orderedCats.includes(k)) orderedCats.push(k); });
+  orderedCats.forEach(catKey => {
+    const items = groups[catKey];
+    // 分类汇总卡片
+    html += '<div class="qa-group-card" data-groupcat="'+catKey+'">'+
+      '<div class="qa-group-head"><span class="qg-name">'+catLabel(catKey)+'</span><span class="qg-count">'+items.length+' 题</span><span class="qg-toggle" onclick="toggleGroupList(this)">展开 ▾</span></div>'+
+      '<div class="qa-group-list">'+items.map(it => '<div class="qg-item" onclick="jumpToQuestion(\''+it.q.id+'\')"><span class="qg-idx">'+(it.idx+1)+'</span><span class="qg-txt">'+it.q.title.replace(/<[^>]+>/g,'').substring(0,40)+'</span></div>').join('')+'</div>'+
+      '</div>';
+    // 该分类下的问题卡片
+    items.forEach(({q, idx}) => {
+      html += '<div class="q-card'+(q.userAdded?' user-added':'')+'" id="qcard-'+q.id+'" data-cat="'+q.cat+'" data-qid="'+q.id+'">'+
+        '<div class="q-header" onclick="toggleQCard(this)"><div class="q-num">'+(idx+1)+'</div><div style="flex:1"><div class="q-title editable" data-key="'+q.id+'_title">'+q.title+'</div><div class="q-tags"><span class="tag tag-blue">'+catLabel(q.cat)+'</span>'+(q.userAdded?'<span class="tag tag-green">自定义</span>':'')+'</div></div>'+(q.userAdded?'<div class="q-delete" onclick="event.stopPropagation();deleteQuestion(\''+q.id+'\')">🗑️</div>':'')+'<span class="q-expand-arrow">▾</span></div>'+
+        '<div class="q-body"><div class="q-section-label">参考答案</div><div class="q-answer editable" data-key="'+q.id+'_answer">'+(q.answer||'（待补充）')+'</div><div class="q-section-label">答题思路</div><div class="q-thought editable" data-key="'+q.id+'_thought">'+(q.thought||'（待补充）')+'</div></div></div>';
+    });
+  });
+  container.innerHTML = html;
   initEditable(); applyQFilter();
+}
+
+// 问题卡片展开/收起
+function toggleQCard(header) {
+  const card = header.parentElement;
+  card.classList.toggle('open');
+}
+// 分类汇总列表展开/收起
+function toggleGroupList(el) {
+  const card = el.closest('.qa-group-card');
+  card.classList.toggle('open');
+  el.textContent = card.classList.contains('open') ? '收起 ▴' : '展开 ▾';
+}
+// 从分类汇总跳转到具体问题
+function jumpToQuestion(qid) {
+  const card = document.getElementById('qcard-' + qid);
+  if (!card) return;
+  // 确保该问题可见（可能被筛选隐藏）
+  const active = document.querySelector('#qaFilter .toolbar-btn.active');
+  const f = active ? active.dataset.filter : 'all';
+  if (f !== 'all' && card.dataset.cat !== f) {
+    document.querySelectorAll('#qaFilter .toolbar-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === 'all'));
+    applyQFilter();
+  }
+  card.classList.add('open');
+  card.scrollIntoView({behavior:'smooth', block:'start'});
+  card.style.transition = 'box-shadow .3s';
+  card.style.boxShadow = '0 0 0 2px var(--accent)';
+  setTimeout(() => { card.style.boxShadow = ''; }, 1500);
 }
 function catLabel(cat) {
   const c = catConfig.find(x => x.key === cat);
@@ -1135,6 +1275,7 @@ function applyQFilter() {
   const active = document.querySelector('#qaFilter .toolbar-btn.active');
   const f = active ? active.dataset.filter : 'all';
   document.querySelectorAll('#qaList .q-card').forEach(c => { c.style.display = (f === 'all' || c.dataset.cat === f) ? '' : 'none'; });
+  document.querySelectorAll('#qaList .qa-group-card').forEach(c => { c.style.display = (f === 'all' || c.dataset.groupcat === f) ? '' : 'none'; });
 }
 function addQuestion() { document.getElementById('addQOverlay').classList.add('show'); document.getElementById('addQTitle').value=''; document.getElementById('addQAnswer').value=''; document.getElementById('addQThought').value=''; document.getElementById('addQCat').value='project'; }
 function closeAddQ() { document.getElementById('addQOverlay').classList.remove('show'); }
@@ -1189,13 +1330,38 @@ function deleteProject(idx) {
 function renderJDs() {
   const container = document.getElementById('jdList');
   const empty = document.getElementById('jdEmpty');
+  renderJdSummary();
   if (userJDs.length === 0) { container.innerHTML = ''; empty.style.display = ''; return; }
   empty.style.display = 'none';
   container.innerHTML = userJDs.map((jd, i) => {
     const analysisHtml = jd.analysis ? renderJDAnalysisHTML(jd.analysis) : '';
-    return '<div class="card jd-card" data-jdidx="'+i+'"><div class="card-title">🎯 '+(jd.title||'未命名岗位')+'<span>'+(jd.time||'')+'</span></div><div class="body-text editable" data-key="jd_'+i+'">'+jd.content.replace(/\n/g,'<br>')+'</div><div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap"><button class="analyze-btn" onclick="analyzeJD('+i+')">🔍 智能匹配分析</button><button class="tag" style="cursor:pointer;background:#FEE2E2;color:#DC2626" onclick="deleteJD('+i+')">🗑️ 删除</button></div>'+analysisHtml+'</div>';
+    return '<div class="card jd-card" id="jd-card-'+i+'" data-jdidx="'+i+'"><div class="card-title editable" data-key="jd_title_'+i+'">🎯 '+(jd.title||'未命名岗位')+'<span>'+(jd.time||'')+'</span></div><div class="body-text editable" data-key="jd_'+i+'">'+jd.content.replace(/\n/g,'<br>')+'</div><div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap"><button class="analyze-btn" onclick="analyzeJD('+i+')">🔍 智能匹配分析</button><button class="tag" style="cursor:pointer;background:#FEE2E2;color:#DC2626" onclick="deleteJD('+i+')">🗑️ 删除</button></div>'+analysisHtml+'</div>';
   }).join('');
   initEditable();
+}
+
+// JD 汇总卡片
+function renderJdSummary() {
+  const list = document.getElementById('jdSummaryList');
+  if (!list) return;
+  if (!userJDs.length) { list.innerHTML = '<div class="jd-sum-empty">还没有添加岗位，先在上方粘贴JD保存吧</div>'; return; }
+  list.innerHTML = userJDs.map((jd, i) => {
+    const score = jd.analysis ? jd.analysis.score + '%' : '';
+    return '<div class="jd-sum-item" onclick="jumpToJd('+i+')"><span class="js-idx">'+(i+1)+'</span><span class="js-title">'+(jd.title||'未命名岗位')+'</span>'+(score?'<span class="js-score">'+score+'</span>':'')+'<span class="js-arrow">›</span></div>';
+  }).join('');
+}
+function refreshJdSummary() {
+  renderJdSummary();
+  showToast('列表已刷新 ✅（共 '+userJDs.length+' 个岗位）');
+}
+function jumpToJd(idx) {
+  const card = document.getElementById('jd-card-'+idx);
+  if (card) {
+    card.scrollIntoView({behavior:'smooth', block:'start'});
+    card.style.transition = 'box-shadow .3s';
+    card.style.boxShadow = '0 0 0 2px var(--accent)';
+    setTimeout(() => { card.style.boxShadow = ''; }, 1500);
+  }
 }
 
 function saveJD() {
