@@ -65,6 +65,20 @@ body.edit-mode .custom-card .cc-del{display:block}
 .card.card-editing{box-shadow:0 0 0 2px var(--accent),0 2px 8px rgba(255,107,53,0.15)}
 .card.card-editing .editable{border:1px dashed rgba(255,107,53,0.5);border-radius:4px;padding:1px 3px;margin:-1px -3px}
 .card .collapsible .card-edit-btn{display:none}
+/* 需求3：避免刷新按钮与铅笔按钮重叠 */
+.jd-summary-card .card-title{padding-right:78px}
+.jd-summary-card .card-edit-btn{right:44px}
+/* 需求3：右下角悬浮加号 */
+.fab-add{position:fixed;right:calc(50% - 240px + 20px);bottom:96px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#FF8A50);color:#fff;font-size:28px;font-weight:400;line-height:1;border:none;box-shadow:0 4px 14px rgba(255,107,53,.45);cursor:pointer;z-index:120;display:flex;align-items:center;justify-content:center}
+@media(max-width:520px){.fab-add{right:20px}}
+.fab-add:active{transform:scale(.94);box-shadow:0 2px 8px rgba(255,107,53,.5)}
+/* 需求3+4：卡片底部展开条 */
+.card-expand-bar{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 0 2px;margin-top:10px;border-top:1px dashed var(--border);font-size:12px;color:var(--text-sub);font-weight:600;cursor:pointer;user-select:none}
+.card-expand-bar:active{color:var(--accent)}
+.card-expand-bar .ceb-arrow{font-size:10px;transition:transform .25s}
+.card.open > .card-expand-bar .ceb-arrow{transform:rotate(180deg)}
+.card > .card-collapse-body{display:none}
+.card.open > .card-collapse-body{display:block}
 /* JD 汇总卡片 */
 .jd-refresh-btn{margin-left:auto;font-size:12px;width:26px;height:26px;border-radius:50%;border:1px solid var(--border);background:#F9FAFB;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .jd-refresh-btn:active{background:var(--primary)}
@@ -94,25 +108,27 @@ body.edit-mode .custom-card .cc-del{display:block}
 .data-item{text-align:center;background:#F8F9FB;padding:10px;border-radius:8px}
 .data-item .num{font-size:20px;font-weight:700;color:var(--accent)}
 .data-item .desc{font-size:11px;color:var(--text-light);margin-top:2px}
-.collapsible{background:var(--card-bg);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
-.collapsible-header{padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-size:14px;font-weight:600;color:var(--secondary)}
-.collapsible-header .arrow{transition:transform .3s;font-size:12px;color:var(--text-light)}
+.collapsible{background:var(--card-bg);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05);position:relative}
+.collapsible-header{padding:14px 16px;display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600;color:var(--secondary);padding-right:44px}
+.collapsible-header .arrow{transition:transform .3s;font-size:12px;color:var(--text-light);display:none}
 .collapsible.open .arrow{transform:rotate(90deg)}
 .collapsible-body{display:none;padding:0 16px 16px;border-top:1px solid var(--border)}
 .collapsible.open .collapsible-body{display:block;animation:slideDown .3s ease}
+.collapsible > .card-expand-bar{margin-top:0;padding:11px 0;background:#FCFCFD}
 @keyframes slideDown{from{opacity:0;max-height:0}to{opacity:1;max-height:3000px}}
-.q-card{background:var(--card-bg);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
-.q-header{padding:14px 16px;background:linear-gradient(135deg,#FFF8E1 0%,#FFFDE7 100%);display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.q-card{background:var(--card-bg);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05);position:relative}
+.q-header{padding:14px 16px;background:linear-gradient(135deg,#FFF8E1 0%,#FFFDE7 100%);display:flex;gap:10px;align-items:flex-start}
 .q-num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--secondary);color:var(--primary);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
 .q-title{font-size:14px;font-weight:600;color:var(--text-main);line-height:1.5;flex:1}
 .q-tags{display:flex;gap:6px;margin-top:6px}
-.q-expand-arrow{flex-shrink:0;font-size:12px;color:var(--text-light);transition:transform .25s;margin-top:4px}
-.q-card.open .q-expand-arrow{transform:rotate(180deg)}
 .q-card .q-card-edit-btn{flex-shrink:0;margin-left:4px}
 .q-card.card-editing{box-shadow:0 0 0 2px var(--accent)}
 .q-card.card-editing .editable{border:1px dashed rgba(255,107,53,.5);border-radius:4px;padding:1px 3px;margin:-1px -3px}
 .q-body{padding:14px 16px;display:none}
 .q-card.open .q-body{display:block;animation:slideDown .25s ease}
+/* 需求4：问题卡片底部展开条 */
+.q-expand-bar{border-top:1px dashed var(--border);margin-top:0;padding:11px 0;background:#FCFCFD}
+.q-card.open .q-expand-bar{border-top-style:dashed}
 /* 分类汇总卡片 */
 .qa-group-card{background:#EEF6FF;border:1px solid #CCE4FF;border-radius:var(--radius);padding:12px 14px;margin-bottom:10px}
 .qa-group-head{display:flex;align-items:center;gap:8px;cursor:pointer}
@@ -269,7 +285,6 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
 
 <!-- ============ 工作内容 ============ -->
 <div class="content-area active" id="tab-work">
-  <div class="tab-edit-bar"><button class="teb-btn" id="etb-work" onclick="toggleTabEdit('work')">✏️ 编辑本栏</button><span class="teb-hint" id="teh-work"></span></div>
   <div class="reset-bar">
     <button onclick="resetAllData()">🔄 恢复全部原始</button>
     <button onclick="addProject()">➕ 添加新项目</button>
@@ -388,7 +403,6 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
 
 <!-- ============ 简历 ============ -->
 <div class="content-area" id="tab-resume">
-  <div class="tab-edit-bar"><button class="teb-btn" id="etb-resume" onclick="toggleTabEdit('resume')">✏️ 编辑本栏</button><span class="teb-hint" id="teh-resume"></span></div>
   <div class="reset-bar"><button onclick="resetAllData()">🔄 恢复全部原始</button></div>
   <div class="card">
     <div class="resume-header">
@@ -421,17 +435,7 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
 
 <!-- ============ 岗位JD ============ -->
 <div class="content-area" id="tab-jd">
-  <div class="tab-edit-bar"><button class="teb-btn" id="etb-jd" onclick="toggleTabEdit('jd')">✏️ 编辑本栏</button><span class="teb-hint" id="teh-jd"></span></div>
   <div class="reset-bar"><button onclick="resetAllData()">🔄 恢复全部原始</button></div>
-
-  <div class="card jd-input-area">
-    <div class="card-title editable" data-key="jd_input_title">🎯 添加意向岗位JD</div>
-    <textarea id="jdInput" placeholder="请在此粘贴意向岗位的JD内容…&#10;&#10;例如：&#10;岗位名称：政府事务运营经理&#10;岗位职责：&#10;1. 负责…&#10;2. 负责…&#10;任职要求：&#10;1. 本科及以上学历…&#10;2. 5年以上…"></textarea>
-    <div class="jd-save-row">
-      <input id="jdTitleInput" placeholder="岗位名称（如：政府事务运营经理）">
-      <button onclick="saveJD()">💾 保存</button>
-    </div>
-  </div>
 
   <!-- JD 汇总卡片 -->
   <div class="card jd-summary-card" id="jdSummaryCard">
@@ -447,14 +451,28 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
     <div class="jd-empty" style="text-align:center;padding:30px 20px;color:var(--text-light)">
       <div style="font-size:48px;margin-bottom:12px">🎯</div>
       <p>暂无保存的岗位JD</p>
-      <p style="font-size:11px;color:var(--text-light);background:#F8F9FB;padding:10px;border-radius:8px;text-align:left;line-height:1.6">在上方粘贴JD内容并保存后，系统将自动：<br>1. 提取JD核心能力要求<br>2. 与过往工作内容匹配共性<br>3. 生成针对性面试话术</p>
+      <p style="font-size:11px;color:var(--text-light);background:#F8F9FB;padding:10px;border-radius:8px;text-align:left;line-height:1.6">点击右下角 <strong>+</strong> 添加意向岗位JD，系统将自动：<br>1. 提取JD核心能力要求<br>2. 与过往工作内容匹配共性<br>3. 生成针对性面试话术</p>
+    </div>
+  </div>
+
+  <!-- 右下角悬浮加号 -->
+  <button class="fab-add" onclick="openJdInput()" title="添加意向岗位">+</button>
+</div>
+
+<!-- 添加JD弹窗 -->
+<div class="edit-overlay" id="jdAddOverlay">
+  <div class="panel"><h3>🎯 添加意向岗位JD</h3>
+    <input id="jdTitleInput" placeholder="岗位名称（如：政府事务运营经理）">
+    <textarea id="jdInput" placeholder="请在此粘贴意向岗位的JD内容…&#10;&#10;例如：&#10;岗位名称：政府事务运营经理&#10;岗位职责：&#10;1. 负责…&#10;2. 负责…&#10;任职要求：&#10;1. 本科及以上学历…&#10;2. 5年以上…" style="min-height:200px"></textarea>
+    <div class="panel-actions">
+      <button class="btn-cancel" onclick="closeJdInput()">取消</button>
+      <button class="btn-save" onclick="saveJD()">保存岗位</button>
     </div>
   </div>
 </div>
 
 <!-- ============ 面试问题 ============ -->
 <div class="content-area" id="tab-qa">
-  <div class="tab-edit-bar"><button class="teb-btn" id="etb-qa" onclick="toggleTabEdit('qa')">✏️ 编辑本栏</button><span class="teb-hint" id="teh-qa"></span></div>
   <div class="reset-bar">
     <button onclick="resetAllData()">🔄 恢复全部原始</button>
     <button onclick="addQuestion()">➕ 添加新问题</button>
@@ -618,8 +636,8 @@ const DEFAULT_CATS = [
 let catConfig = [];
 
 // ============ 版本与在线更新 ============
-const APP_VERSION = '5.1';
-const APP_TAG = 'v5.1';  // 当前发布标签，发新版时同步更新
+const APP_VERSION = '5.2';
+const APP_TAG = 'v5.2';  // 当前发布标签，发新版时同步更新
 const REPO = 'xxuan-cell/interview-workbench';
 
 // 多源候选：按可靠性排序，逐个尝试
@@ -822,20 +840,9 @@ function toggleTabEdit(tabKey) {
 }
 
 function applyTabEditUI() {
-  const activeTab = document.querySelector('.tab-item.active')?.dataset.tab || 'work';
-  const on = !!tabEditStates[activeTab];
-  editMode = on;
-  document.body.classList.toggle('edit-mode', on);
-  // 更新所有 tab 内的编辑按钮状态
-  tabConfig.forEach(t => {
-    const btn = document.getElementById('etb-' + t.key);
-    const hint = document.getElementById('teh-' + t.key);
-    if (btn) {
-      btn.textContent = tabEditStates[t.key] ? '✅ 完成编辑' : '✏️ 编辑本栏';
-      btn.classList.toggle('on', !!tabEditStates[t.key]);
-    }
-    if (hint) hint.textContent = tabEditStates[t.key] ? '💡 点文字即可修改' : '';
-  });
+  // 已移除「编辑本栏」按钮，编辑完全由卡片级按钮控制，这里只需保持全局 editMode 为 false
+  editMode = false;
+  document.body.classList.remove('edit-mode');
 }
 
 function toggleEditMode() { toggleTabEdit(document.querySelector('.tab-item.active')?.dataset.tab || 'work'); }
@@ -879,16 +886,15 @@ function injectCardEditBtns() {
     };
     header.appendChild(btn);
   });
-  // 折叠面板（项目卡片）也支持
+  // 折叠面板（项目卡片）：需求4 - 展开条移到底部，编辑按钮放右上角
   document.querySelectorAll('.collapsible').forEach(card => {
     if (card.querySelector(':scope > .collapsible-header .card-edit-btn')) return;
     if (!card.querySelector('.editable')) return;
     const header = card.querySelector(':scope > .collapsible-header');
     if (!header) return;
+    // 1) 编辑按钮：放卡片右上角（absolute），不再挤在标题旁
     const btn = document.createElement('button');
-    btn.className = 'card-edit-btn';
-    btn.style.position = 'static';
-    btn.style.marginLeft = 'auto';
+    btn.className = 'card-edit-btn collapsible-edit-btn';
     btn.textContent = '✎';
     btn.onclick = function(ev) {
       ev.stopPropagation();
@@ -896,10 +902,30 @@ function injectCardEditBtns() {
       const on = card.classList.contains('editing');
       btn.classList.toggle('on', on);
       btn.textContent = on ? '✓' : '✎';
-      // 编辑时自动展开
       if (on) card.classList.add('open');
     };
-    header.insertBefore(btn, header.querySelector('.arrow'));
+    card.appendChild(btn);
+    // 2) 移除 header 上的点击展开与旧箭头，改由底部展开条控制
+    header.onclick = null;
+    header.style.cursor = 'default';
+    const oldArrow = header.querySelector('.arrow');
+    if (oldArrow) oldArrow.style.display = 'none';
+    // 3) 底部展开条（确保是最后一个子元素）
+    if (!card.querySelector(':scope > .card-expand-bar')) {
+      const bar = document.createElement('div');
+      bar.className = 'card-expand-bar';
+      bar.innerHTML = '<span class="ceb-text">' + (card.classList.contains('open') ? '点击收起' : '点击展开') + '</span><span class="ceb-arrow">▼</span>';
+      bar.onclick = function(ev) {
+        ev.stopPropagation();
+        toggleCardExpand(bar);
+      };
+      card.appendChild(bar);
+    }
+    // 编辑按钮放在展开条之前，保证展开条始终在最底部
+    const barEl = card.querySelector(':scope > .card-expand-bar');
+    if (barEl && barEl.previousElementSibling !== btn) {
+      card.insertBefore(btn, barEl);
+    }
   });
 }
 
@@ -1048,7 +1074,22 @@ function renderTabs() {
     attachTouchDrag(div, t.key);
     bar.insertBefore(div, manageBtn);
   });
+  renderBottomNav();   // 需求1：底部导航同步顺序与名称
   renderTabContents();
+}
+
+// 底部导航与 tab 顺序/名称保持一致
+const NAV_ICONS = {work:'📋', resume:'📄', jd:'🎯', qa:'💬'};
+function renderBottomNav() {
+  const nav = document.getElementById('bottomNav');
+  if (!nav) return;
+  const activeKey = document.querySelector('.tab-item.active')?.dataset.tab;
+  nav.innerHTML = tabConfig.map(t => {
+    const icon = NAV_ICONS[t.key] || t.icon || '📌';
+    const shortName = t.navName || (t.name.length > 4 ? t.name.substring(0,4) : t.name);
+    return '<div class="nav-item'+(t.key===activeKey?' active':'')+'" data-tab="'+t.key+'"><span class="nav-icon">'+icon+'</span><span>'+shortName+'</span></div>';
+  }).join('');
+  nav.querySelectorAll('.nav-item').forEach(n => n.addEventListener('click', () => switchTab(n.dataset.tab)));
 }
 
 // 触屏拖动支持
@@ -1117,9 +1158,7 @@ function renderTabContents() {
 }
 function renderCustomTabContent(area, key) {
   const cards = loadFromStorage('card_' + key, []);
-  const editing = !!tabEditStates[key];
-  area.innerHTML = '<div class="tab-edit-bar"><button class="teb-btn'+(editing?' on':'')+'" id="etb-'+key+'" onclick="toggleTabEdit(\''+key+'\')">'+(editing?'✅ 完成编辑':'✏️ 编辑本栏')+'</button><span class="teb-hint" id="teh-'+key+'">'+(editing?'💡 点文字即可修改':'')+'</span></div>' +
-    cards.map((c, i) => '<div class="custom-card"><span class="cc-del" onclick="delCustomCard(\''+key+'\','+i+')">删除</span><div class="cc-text editable" data-key="card_'+key+'_'+i+'">'+(c||'')+'</div></div>').join('') +
+  area.innerHTML = cards.map((c, i) => '<div class="custom-card"><span class="cc-del" onclick="delCustomCard(\''+key+'\','+i+')">删除</span><div class="cc-text editable" data-key="card_'+key+'_'+i+'">'+(c||'')+'</div></div>').join('') +
     '<button class="add-card-btn" onclick="addCustomCard(\''+key+'\')">➕ 添加卡片</button>';
   initEditable();
 }
@@ -1250,8 +1289,12 @@ function renderAllQuestions() {
     // 该分类下的问题卡片
     items.forEach(({q, idx}) => {
       html += '<div class="q-card'+(q.userAdded?' user-added':'')+'" id="qcard-'+q.id+'" data-cat="'+q.cat+'" data-qid="'+q.id+'">'+
-        '<div class="q-header" onclick="toggleQCard(this)"><div class="q-num">'+(idx+1)+'</div><div style="flex:1"><div class="q-title editable" data-key="'+q.id+'_title">'+q.title+'</div><div class="q-tags"><span class="tag tag-blue">'+catLabel(q.cat)+'</span>'+(q.userAdded?'<span class="tag tag-green">自定义</span>':'')+'</div></div>'+(q.userAdded?'<div class="q-delete" onclick="event.stopPropagation();deleteQuestion(\''+q.id+'\')">🗑️</div>':'')+'<span class="q-expand-arrow">▾</span></div>'+
-        '<div class="q-body"><div class="q-section-label">参考答案</div><div class="q-answer editable" data-key="'+q.id+'_answer">'+(q.answer||'（待补充）')+'</div><div class="q-section-label">答题思路</div><div class="q-thought editable" data-key="'+q.id+'_thought">'+(q.thought||'（待补充）')+'</div></div></div>';
+        // 标题区不再承担展开功能，只放序号/标题/标签/删除/编辑按钮
+        '<div class="q-header"><div class="q-num">'+(idx+1)+'</div><div style="flex:1"><div class="q-title editable" data-key="'+q.id+'_title">'+q.title+'</div><div class="q-tags"><span class="tag tag-blue">'+catLabel(q.cat)+'</span>'+(q.userAdded?'<span class="tag tag-green">自定义</span>':'')+'</div></div>'+(q.userAdded?'<div class="q-delete" onclick="event.stopPropagation();deleteQuestion(\''+q.id+'\')">🗑️</div>':'')+'</div>'+
+        '<div class="q-body"><div class="q-section-label">参考答案</div><div class="q-answer editable" data-key="'+q.id+'_answer">'+(q.answer||'（待补充）')+'</div><div class="q-section-label">答题思路</div><div class="q-thought editable" data-key="'+q.id+'_thought">'+(q.thought||'（待补充）')+'</div></div>'+
+        // 需求4：底部展开条，远离编辑按钮
+        '<div class="card-expand-bar q-expand-bar" onclick="toggleCardExpand(this)"><span class="ceb-text">点击展开</span><span class="ceb-arrow">▼</span></div>'+
+      '</div>';
     });
   });
   container.innerHTML = html;
@@ -1389,9 +1432,27 @@ function renderJDs() {
   empty.style.display = 'none';
   container.innerHTML = userJDs.map((jd, i) => {
     const analysisHtml = jd.analysis ? renderJDAnalysisHTML(jd.analysis) : '';
-    return '<div class="card jd-card" id="jd-card-'+i+'" data-jdidx="'+i+'"><div class="card-title editable" data-key="jd_title_'+i+'">🎯 '+(jd.title||'未命名岗位')+'<span>'+(jd.time||'')+'</span></div><div class="body-text editable" data-key="jd_'+i+'">'+jd.content.replace(/\n/g,'<br>')+'</div><div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap"><button class="analyze-btn" onclick="analyzeJD('+i+')">🔍 智能匹配分析</button><button class="tag" style="cursor:pointer;background:#FEE2E2;color:#DC2626" onclick="deleteJD('+i+')">🗑️ 删除</button></div>'+analysisHtml+'</div>';
+    return '<div class="card jd-card" id="jd-card-'+i+'" data-jdidx="'+i+'">'+
+      '<div class="card-title editable" data-key="jd_title_'+i+'">🎯 '+(jd.title||'未命名岗位')+'<span>'+(jd.time||'')+'</span></div>'+
+      // 折叠区：JD正文 + 操作 + 分析
+      '<div class="card-collapse-body">'+
+        '<div class="body-text editable" data-key="jd_'+i+'">'+jd.content.replace(/\n/g,'<br>')+'</div>'+
+        '<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap"><button class="analyze-btn" onclick="analyzeJD('+i+')">🔍 智能匹配分析</button><button class="tag" style="cursor:pointer;background:#FEE2E2;color:#DC2626" onclick="deleteJD('+i+')">🗑️ 删除</button></div>'+
+        analysisHtml+
+      '</div>'+
+      // 需求3+4：底部展开/收起条
+      '<div class="card-expand-bar" onclick="toggleCardExpand(this)"><span class="ceb-text">点击展开</span><span class="ceb-arrow">▼</span></div>'+
+    '</div>';
   }).join('');
   initEditable();
+}
+
+// 通用卡片展开/收起（展开条在卡片底部）
+function toggleCardExpand(bar) {
+  const card = bar.parentElement;
+  card.classList.toggle('open');
+  const txt = bar.querySelector('.ceb-text');
+  if (txt) txt.textContent = card.classList.contains('open') ? '点击收起' : '点击展开';
 }
 
 // JD 汇总卡片
@@ -1411,12 +1472,25 @@ function refreshJdSummary() {
 function jumpToJd(idx) {
   const card = document.getElementById('jd-card-'+idx);
   if (card) {
+    // 若折叠则先展开
+    if (!card.classList.contains('open')) {
+      const bar = card.querySelector(':scope > .card-expand-bar');
+      if (bar) toggleCardExpand(bar);
+    }
     card.scrollIntoView({behavior:'smooth', block:'start'});
     card.style.transition = 'box-shadow .3s';
     card.style.boxShadow = '0 0 0 2px var(--accent)';
     setTimeout(() => { card.style.boxShadow = ''; }, 1500);
   }
 }
+
+function openJdInput() {
+  document.getElementById('jdInput').value = '';
+  document.getElementById('jdTitleInput').value = '';
+  document.getElementById('jdAddOverlay').classList.add('show');
+  setTimeout(() => document.getElementById('jdTitleInput').focus(), 250);
+}
+function closeJdInput() { document.getElementById('jdAddOverlay').classList.remove('show'); }
 
 function saveJD() {
   const content = document.getElementById('jdInput').value.trim();
@@ -1426,7 +1500,7 @@ function saveJD() {
   const jd = {title, content, time: now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')};
   userJDs.push(jd); saveToStorage('jds', userJDs);
   addHistory('添加JD', '保存了岗位JD「'+title+'」');
-  document.getElementById('jdInput').value = ''; document.getElementById('jdTitleInput').value = '';
+  closeJdInput();
   renderJDs(); showToast('JD已保存 ✅');
 }
 
