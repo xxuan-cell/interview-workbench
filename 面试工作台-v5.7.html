@@ -682,8 +682,8 @@ let qaOrder = [];      // 问题全局显示顺序（问题id数组）
 let qaCatOverride = {}; // 问题分类覆盖 {qid: catKey}
 
 // ============ 版本与在线更新 ============
-const APP_VERSION = '5.6';
-const APP_TAG = 'v5.6';  // 当前发布标签，发新版时同步更新
+const APP_VERSION = '5.7';
+const APP_TAG = 'v5.7';  // 当前发布标签，发新版时同步更新
 const REPO = 'xxuan-cell/interview-workbench';
 
 // 多源候选：按可靠性排序，逐个尝试
@@ -1799,7 +1799,7 @@ function renderJDs() {
   if (userJDs.length === 0) { container.innerHTML = ''; empty.style.display = ''; return; }
   empty.style.display = 'none';
   container.innerHTML = userJDs.map((jd, i) => {
-    const analysisHtml = jd.analysis ? renderJDAnalysisHTML(jd.analysis) : '';
+    const analysisHtml = jd.analysis ? renderJDAnalysisHTML(ensureAnalysisModules(jd.analysis, jd)) : '';
     return '<div class="card jd-card" id="jd-card-'+i+'" data-jdidx="'+i+'">'+
       '<div class="card-title editable" data-key="jd_title_'+i+'">🎯 '+(jd.title||'未命名岗位')+'<span>'+(jd.time||'')+'</span></div>'+
       // 折叠区：JD正文 + 操作 + 分析
@@ -2214,6 +2214,26 @@ function generateSuggestedQuestions(jd, jdTags, matched, unmatched) {
   }
   
   return questions;
+}
+
+// 旧版分析结果缺自我介绍/问题建议模块时，现场补生成
+function ensureAnalysisModules(a, jd) {
+  if (!a || !jd) return a;
+  if (a.selfIntro && a.suggestedQuestions && a.suggestedQuestions.length) return a;
+  try {
+    const jdTags = extractJDKeywords(jd.content);
+    const projects = buildExperienceDB();
+    const matched = [], unmatched = [];
+    projects.forEach(p => {
+      const overlap = (p.tags||[]).filter(t => jdTags.includes(t));
+      if (overlap.length > 0) matched.push({...p, overlap, score: overlap.length});
+      else unmatched.push(p);
+    });
+    if (!a.selfIntro) a.selfIntro = generateSelfIntro(jd, jdTags, matched);
+    if (!a.suggestedQuestions || !a.suggestedQuestions.length) a.suggestedQuestions = generateSuggestedQuestions(jd, jdTags, matched, unmatched);
+    saveToStorage('jds', userJDs);
+  } catch(e) { /* 补生成失败不影响原有分析展示 */ }
+  return a;
 }
 
 // 渲染分析结果HTML
