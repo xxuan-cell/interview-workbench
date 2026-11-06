@@ -183,6 +183,7 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
   <div><h1>面试工作台</h1><p>项目管理思维 · 结构化备战</p></div>
   <div class="header-btns">
     <button class="hbtn" id="updateBtn" onclick="checkUpdate()">🔄 更新</button>
+    <button class="hbtn" onclick="openSync()">☁️ 同步</button>
     <button class="hbtn" onclick="showHistory()">📜 记录</button>
     <button class="hbtn" id="editToggle" onclick="toggleEditMode()">✏️ 编辑</button>
   </div>
@@ -411,6 +412,23 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
   </div>
 </div>
 
+<!-- ===== 云同步弹窗 ===== -->
+<div class="edit-overlay" id="syncOverlay">
+  <div class="panel"><h3>☁️ 多设备云同步</h3>
+    <div style="font-size:12px;color:var(--text-sub);line-height:1.8;margin-bottom:10px">
+      在<strong>手机</strong>上点「上传到云端」会生成一个<strong>同步码</strong>，把它复制到 <strong>Mac</strong> 上打开本页面 → 点「☁️ 同步」→ 粘贴同步码 → 点「从云端下载」，两边数据就一致了。<br>
+      之后任何一台设备改了内容，改完后上传，另一台下载即可保持同步。
+    </div>
+    <input id="syncCodeInput" placeholder="粘贴同步码（第一次使用可留空）">
+    <div id="syncStatus" style="font-size:12px;color:var(--text-light);margin-bottom:8px;min-height:18px"></div>
+    <div class="panel-actions">
+      <button class="btn-cancel" onclick="closeSync()">关闭</button>
+      <button class="btn-save" onclick="pullSync()" style="background:#3B82F6">⬇️ 从云端下载</button>
+      <button class="btn-save" onclick="pushSync()">⬆️ 上传到云端</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== 添加问题弹窗 ===== -->
 <div class="add-overlay" id="addQOverlay">
   <div class="panel"><h3>➕ 添加面试问题</h3>
@@ -473,7 +491,7 @@ let editHistory = [];
 let historyFilter = 'all';
 
 // ============ 版本与在线更新 ============
-const APP_VERSION = '2.0';
+const APP_VERSION = '2.1';
 const UPDATE_URL = 'https://cdn.jsdelivr.net/gh/xxuan-cell/interview-workbench@master/index.html';
 const UPDATE_URL_BACKUP = 'https://github.com/xxuan-cell/interview-workbench/raw/master/index.html';
 
@@ -1177,6 +1195,73 @@ function renderJDAnalysisHTML(a) {
 
 // ============ 历史面板关闭（点击背景） ============
 document.getElementById('historyPanel').addEventListener('click', function(e) { if (e.target === this) closeHistory(); });
+document.getElementById('syncOverlay').addEventListener('click', function(e) { if (e.target === this) closeSync(); });
+
+// ============ 云同步（多设备数据一致） ============
+const SYNC_API = 'https://jsonblob.com/api/jsonBlob';
+function openSync() {
+  document.getElementById('syncOverlay').classList.add('show');
+  const saved = localStorage.getItem('iw_sync_code');
+  document.getElementById('syncCodeInput').value = saved || '';
+  document.getElementById('syncStatus').textContent = saved ? '当前绑定同步码：' + saved : '尚未绑定同步码';
+}
+function closeSync() { document.getElementById('syncOverlay').classList.remove('show'); }
+function collectSyncData() {
+  const data = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k.startsWith('iw_') && k !== 'iw_sync_code') data[k] = localStorage.getItem(k);
+  }
+  data.iw_sync_time = new Date().toLocaleString();
+  return data;
+}
+function applySyncData(data) {
+  let count = 0;
+  Object.keys(data).forEach(k => { if (k.startsWith('iw_')) { localStorage.setItem(k, data[k]); count++; } });
+  return count;
+}
+async function pushSync() {
+  const status = document.getElementById('syncStatus');
+  let code = document.getElementById('syncCodeInput').value.trim();
+  status.textContent = '⏳ 正在上传...';
+  try {
+    const data = JSON.stringify(collectSyncData());
+    if (!code) {
+      // 首次：创建新云端存储
+      const resp = await fetch(SYNC_API, {method:'POST', headers:{'Content-Type':'application/json'}, body: data});
+      if (!resp.ok) throw new Error('创建失败');
+      const loc = resp.headers.get('Location') || resp.headers.get('location');
+      code = loc.split('/').pop();
+    } else {
+      const resp = await fetch(SYNC_API + '/' + code, {method:'PUT', headers:{'Content-Type':'application/json'}, body: data});
+      if (!resp.ok) throw new Error('上传失败');
+    }
+    localStorage.setItem('iw_sync_code', code);
+    document.getElementById('syncCodeInput').value = code;
+    status.innerHTML = '✅ 上传成功！同步码：<strong style="color:var(--accent);user-select:all">' + code + '</strong>（长按复制，在Mac上粘贴使用）';
+    showToast('已上传到云端 ✅');
+  } catch(e) {
+    status.textContent = '❌ 上传失败，请检查网络后重试';
+  }
+}
+async function pullSync() {
+  const status = document.getElementById('syncStatus');
+  const code = document.getElementById('syncCodeInput').value.trim();
+  if (!code) { status.textContent = '请先粘贴同步码'; return; }
+  status.textContent = '⏳ 正在下载...';
+  try {
+    const resp = await fetch(SYNC_API + '/' + code + '?t=' + Date.now(), {cache:'no-store'});
+    if (!resp.ok) throw new Error('下载失败');
+    const data = await resp.json();
+    const count = applySyncData(data);
+    localStorage.setItem('iw_sync_code', code);
+    status.textContent = '✅ 同步成功！共导入 ' + count + ' 项数据（云端时间：' + (data.iw_sync_time||'未知') + '），即将刷新页面...';
+    showToast('同步成功 ✅');
+    setTimeout(() => location.reload(), 1500);
+  } catch(e) {
+    status.textContent = '❌ 下载失败，请检查同步码是否正确';
+  }
+}
 
 // ============ 初始化 ============
 function init() {
