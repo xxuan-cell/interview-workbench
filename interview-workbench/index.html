@@ -25,19 +25,11 @@ body.edit-mode .header .ws-name::after{opacity:.6}
 .tab-edit-bar .teb-btn{flex-shrink:0;font-size:12px;background:var(--secondary);color:var(--primary);border:none;padding:8px 14px;border-radius:20px;font-weight:700;cursor:pointer}
 .tab-edit-bar .teb-btn.on{background:var(--accent);color:#fff}
 .tab-edit-bar .teb-hint{flex:1;font-size:11px;color:var(--text-light);text-align:right}
-.tab-bar{display:flex;background:var(--card-bg);position:sticky;top:92px;z-index:99;border-bottom:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-.tab-bar::-webkit-scrollbar{display:none}
-.tab-item{flex:1 0 auto;padding:12px 14px;text-align:center;font-size:13px;color:var(--text-sub);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all .2s;font-weight:500;position:relative}
-.tab-item.active{color:var(--secondary);border-bottom-color:var(--primary);font-weight:700}
 .content-area{display:none;padding:16px;animation:fadeIn .3s ease}
 .content-area.active{display:block}
 
 /* 板块排序 / 拖动 */
-body.edit-mode .tab-item{cursor:grab;border-right:1px dashed var(--border)}
-.tab-item.drag-over{border-left:3px solid var(--accent);background:#FFF8E1}
-.tab-item.dragging{opacity:.4}
-.tab-manage-btn{margin-left:8px;font-size:11px;background:var(--secondary);color:var(--primary);border:none;padding:4px 8px;border-radius:12px;font-weight:700;cursor:pointer;flex-shrink:0}
-/* 板块管理面板 */
+body.edit-mode /* 板块管理面板 */
 .tab-mgr-row{display:flex;align-items:center;gap:6px;padding:8px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;font-size:13px;background:#fff}
 .tab-mgr-row .tm-name{flex:1;font-weight:600;color:var(--text-main);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tab-mgr-row .tm-btn{width:28px;height:28px;border:1px solid var(--border);background:#F9FAFB;border-radius:6px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -59,9 +51,11 @@ body.edit-mode .custom-card .cc-del{display:block}
 .card-title{font-size:16px;font-weight:700;color:var(--secondary);margin-bottom:12px;display:flex;align-items:center;gap:8px;padding-right:38px}
 .card-title:has(.jd-refresh-btn){padding-right:0}
 .card-title .jd-refresh-btn{margin-left:auto}
-/* 卡片级编辑按钮 */
-.card-edit-btn{position:absolute;top:10px;right:10px;z-index:5;font-size:10px;background:#F3F4F6;color:var(--text-sub);border:1px solid var(--border);padding:3px 8px;border-radius:10px;font-weight:600;cursor:pointer;line-height:1.4}
+/* 卡片级编辑按钮（醒目版） */
+.card-edit-btn{position:absolute;top:10px;right:10px;z-index:6;font-size:11px;background:#FFF3E0;color:#E65100;border:1px solid #FFCC80;padding:4px 9px;border-radius:12px;font-weight:700;cursor:pointer;line-height:1.4;box-shadow:0 1px 3px rgba(230,81,0,.15)}
+.card-edit-btn::after{content:'编辑'}
 .card-edit-btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.card-edit-btn.on::after{content:'完成'}
 .card.card-editing{box-shadow:0 0 0 2px var(--accent),0 2px 8px rgba(255,107,53,0.15)}
 .card.card-editing .editable{border:1px dashed rgba(255,107,53,0.5);border-radius:4px;padding:1px 3px;margin:-1px -3px}
 .card .collapsible .card-edit-btn{display:none}
@@ -117,18 +111,18 @@ body.edit-mode .custom-card .cc-del{display:block}
 .collapsible > .card-expand-bar{margin-top:0;padding:11px 0;background:#FCFCFD}
 @keyframes slideDown{from{opacity:0;max-height:0}to{opacity:1;max-height:3000px}}
 .q-card{background:var(--card-bg);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05);position:relative}
-.q-header{padding:14px 16px;background:linear-gradient(135deg,#FFF8E1 0%,#FFFDE7 100%);display:flex;gap:10px;align-items:flex-start}
+.q-header{padding:14px 16px;background:linear-gradient(135deg,#FFF8E1 0%,#FFFDE7 100%);display:flex;gap:10px;align-items:flex-start;cursor:pointer;padding-right:66px}
 .q-num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--secondary);color:var(--primary);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
 .q-title{font-size:14px;font-weight:600;color:var(--text-main);line-height:1.5;flex:1}
 .q-tags{display:flex;gap:6px;margin-top:6px}
-.q-card .q-card-edit-btn{flex-shrink:0;margin-left:4px}
+.q-arrow{flex-shrink:0;font-size:11px;color:var(--text-light);transition:transform .3s;margin-top:5px}
+.q-card.open .q-arrow{transform:rotate(90deg)}
 .q-card.card-editing{box-shadow:0 0 0 2px var(--accent)}
 .q-card.card-editing .editable{border:1px dashed rgba(255,107,53,.5);border-radius:4px;padding:1px 3px;margin:-1px -3px}
 .q-body{padding:14px 16px;display:none}
 .q-card.open .q-body{display:block;animation:slideDown .25s ease}
-/* 需求4：问题卡片底部展开条 */
-.q-expand-bar{border-top:1px dashed var(--border);margin-top:0;padding:11px 0;background:#FCFCFD}
-.q-card.open .q-expand-bar{border-top-style:dashed}
+.q-del-btn{width:100%;padding:9px;border-radius:8px;border:1px solid #FECACA;background:#FEF2F2;color:#DC2626;font-size:12px;font-weight:600;cursor:pointer}
+.q-del-btn:active{background:#FEE2E2}
 /* 分类汇总卡片 */
 .qa-group-card{background:#EEF6FF;border:1px solid #CCE4FF;border-radius:var(--radius);padding:12px 14px;margin-bottom:10px}
 .qa-group-head{display:flex;align-items:center;gap:8px;cursor:pointer}
@@ -157,8 +151,12 @@ body.edit-mode .custom-card .cc-del{display:block}
 .timeline-title{font-size:14px;font-weight:600;color:var(--text-main);margin:2px 0}
 .timeline-company{font-size:12px;color:var(--accent);font-weight:600;margin-bottom:4px}
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card-bg);display:flex;border-top:1px solid var(--border);padding:8px 0 20px;z-index:100;max-width:480px;margin:0 auto}
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:var(--text-light);cursor:pointer;transition:color .2s}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:var(--text-light);cursor:pointer;transition:color .2s;user-select:none;-webkit-user-select:none;position:relative;padding:0 2px}
 .nav-item.active{color:var(--secondary)}
+.nav-item .nav-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.nav-item.dragging{opacity:.45;transform:scale(.92)}
+.nav-item.drag-over{background:#FFF3E0;border-radius:8px}
+.nav-item.drag-over::before{content:'';position:absolute;left:-2px;top:6px;bottom:6px;width:3px;background:var(--accent);border-radius:2px}
 .nav-icon{font-size:20px;line-height:1}
 .toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 .toolbar-btn{flex:1 0 auto;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:white;font-size:11px;color:var(--text-sub);text-align:center;cursor:pointer;font-weight:500}
@@ -272,15 +270,10 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
     <button class="hbtn" id="updateBtn" onclick="checkUpdate()">🔄 升级App</button>
     <button class="hbtn" onclick="openSync()">☁️ 数据同步</button>
     <button class="hbtn" onclick="showHistory()">📜 记录</button>
+    <button class="hbtn" onclick="openTabManager()">⚙️ 板块</button>
   </div>
 </div>
 
-<div class="tab-bar" id="tabBar">
-  <div class="tab-item active" data-tab="work">工作内容</div>
-  <div class="tab-item" data-tab="resume">简历</div>
-  <div class="tab-item" data-tab="jd">岗位JD</div>
-  <div class="tab-item" data-tab="qa">面试问题</div>
-  <button class="tab-manage-btn" onclick="openTabManager()" title="板块管理">⚙️</button>
 </div>
 
 <!-- ============ 工作内容 ============ -->
@@ -514,7 +507,7 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
   <div class="panel"><h3>⚙️ 板块管理</h3>
     <div style="font-size:12px;color:var(--text-sub);line-height:1.7;margin-bottom:12px">
       可以调整板块顺序、重命名、新增或删除板块。<br>
-      <span style="color:var(--accent)">提示：</span>也可以直接在页面顶部<strong>长按板块标签拖动</strong>来排序。
+      <span style="color:var(--accent)">快捷操作：</span>直接在底部导航栏<strong>长按拖动</strong>可调整顺序，<strong>双击</strong>可修改名称。
     </div>
     <div id="tabMgrList"></div>
     <button class="add-card-btn" onclick="addCustomTab()">➕ 新增板块</button>
@@ -603,7 +596,7 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
 </div>
 
 <!-- Toast -->
-<div id="toast" style="position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#2C3E50;color:#FFD100;padding:10px 24px;border-radius:24px;font-size:13px;font-weight:600;z-index:300;pointer-events:none;transition:all .3s;opacity:0"></div>
+<div id="toast" style="position:fixed;top:88px;left:50%;transform:translateX(-50%);background:#2C3E50;color:#FFD100;padding:11px 26px;border-radius:24px;font-size:13px;font-weight:600;z-index:400;pointer-events:none;transition:all .3s;opacity:0;max-width:90vw;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.25)"></div>
 
 <script>
 // ============ 全局状态 ============
@@ -636,8 +629,8 @@ const DEFAULT_CATS = [
 let catConfig = [];
 
 // ============ 版本与在线更新 ============
-const APP_VERSION = '5.2';
-const APP_TAG = 'v5.2';  // 当前发布标签，发新版时同步更新
+const APP_VERSION = '5.3';
+const APP_TAG = 'v5.3';  // 当前发布标签，发新版时同步更新
 const REPO = 'xxuan-cell/interview-workbench';
 
 // 多源候选：按可靠性排序，逐个尝试
@@ -845,7 +838,7 @@ function applyTabEditUI() {
   document.body.classList.remove('edit-mode');
 }
 
-function toggleEditMode() { toggleTabEdit(document.querySelector('.tab-item.active')?.dataset.tab || 'work'); }
+function toggleEditMode() { /* 已改为卡片级编辑，保留空函数兼容 */ }
 
 // ============ 卡片级编辑 ============
 function injectCardEditBtns() {
@@ -855,13 +848,12 @@ function injectCardEditBtns() {
     if (!card.querySelector('.editable')) return;  // 无内容可编辑则不加
     const btn = document.createElement('button');
     btn.className = 'card-edit-btn';
-    btn.textContent = '✎';
+    btn.type = 'button';
     btn.onclick = function(ev) {
       ev.stopPropagation();
       card.classList.toggle('card-editing');
       const on = card.classList.contains('card-editing');
       btn.classList.toggle('on', on);
-      btn.textContent = on ? '✓' : '✎';
       if (on) showToast('已开启本卡片编辑，点文字即可修改');
     };
     card.appendChild(btn);
@@ -874,17 +866,15 @@ function injectCardEditBtns() {
     if (!card.querySelector('.editable')) return;
     const btn = document.createElement('button');
     btn.className = 'card-edit-btn q-card-edit-btn';
-    btn.style.position = 'static';
-    btn.textContent = '✎';
+    btn.type = 'button';
     btn.onclick = function(ev) {
       ev.stopPropagation();
       card.classList.toggle('card-editing');
       const on = card.classList.contains('card-editing');
       btn.classList.toggle('on', on);
-      btn.textContent = on ? '✓' : '✎';
       if (on) { card.classList.add('open'); showToast('已开启本问题编辑'); }
     };
-    header.appendChild(btn);
+    card.appendChild(btn);
   });
   // 折叠面板（项目卡片）：需求4 - 展开条移到底部，编辑按钮放右上角
   document.querySelectorAll('.collapsible').forEach(card => {
@@ -895,13 +885,12 @@ function injectCardEditBtns() {
     // 1) 编辑按钮：放卡片右上角（absolute），不再挤在标题旁
     const btn = document.createElement('button');
     btn.className = 'card-edit-btn collapsible-edit-btn';
-    btn.textContent = '✎';
+    btn.type = 'button';
     btn.onclick = function(ev) {
       ev.stopPropagation();
       card.classList.toggle('editing');
       const on = card.classList.contains('editing');
       btn.classList.toggle('on', on);
-      btn.textContent = on ? '✓' : '✎';
       if (on) card.classList.add('open');
     };
     card.appendChild(btn);
@@ -1009,11 +998,9 @@ function initEditable() {
 
 // ============ Tab ============
 function switchTab(name) {
-  document.querySelectorAll('.tab-item').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
   document.querySelectorAll('.content-area').forEach(c => c.classList.toggle('active', c.id === 'tab-' + name));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.tab === name));
   window.scrollTo(0, 0);
-  applyTabEditUI();  // 切 tab 时同步编辑状态
 }
 
 // ============ 板块动态渲染 ============
@@ -1040,75 +1027,80 @@ function loadCatConfig() {
   }
 }
 
+const NAV_ICONS = {work:'📋', resume:'📄', jd:'🎯', qa:'💬'};
+
+// 渲染底部导航（唯一入口）：支持长按拖动排序、双击改名称
 function renderTabs() {
-  const bar = document.getElementById('tabBar');
-  const manageBtn = bar.querySelector('.tab-manage-btn');
-  // 清掉旧的 tab-item（保留管理按钮）
-  bar.querySelectorAll('.tab-item').forEach(el => el.remove());
-  const activeKey = document.querySelector('.tab-item.active')?.dataset.tab;
-  tabConfig.forEach(t => {
-    const div = document.createElement('div');
-    div.className = 'tab-item' + (t.key === activeKey ? ' active' : '');
-    div.dataset.tab = t.key;
-    div.textContent = t.name;
-    div.draggable = true;
-    div.addEventListener('click', () => { if (!dragMoved) switchTab(t.key); });
-    // 拖动
-    div.addEventListener('dragstart', e => { dragSrcKey = t.key; dragMoved = false; div.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
-    div.addEventListener('dragend', () => { div.classList.remove('dragging'); document.querySelectorAll('.tab-item').forEach(x => x.classList.remove('drag-over')); setTimeout(()=>dragMoved=false, 100); });
-    div.addEventListener('dragover', e => { e.preventDefault(); div.classList.add('drag-over'); });
-    div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
-    div.addEventListener('drop', e => {
-      e.preventDefault(); div.classList.remove('drag-over');
-      const fromKey = dragSrcKey, toKey = t.key;
-      if (!fromKey || fromKey === toKey) return;
-      const fi = tabConfig.findIndex(x => x.key === fromKey);
-      const ti = tabConfig.findIndex(x => x.key === toKey);
-      if (fi < 0 || ti < 0) return;
-      const [moved] = tabConfig.splice(fi, 1);
-      tabConfig.splice(ti, 0, moved);
-      saveTabs(); renderTabs(); renderTabContents(); dragMoved = true;
-      showToast('板块顺序已调整');
-    });
-    // 触屏长按拖动
-    attachTouchDrag(div, t.key);
-    bar.insertBefore(div, manageBtn);
-  });
-  renderBottomNav();   // 需求1：底部导航同步顺序与名称
+  renderBottomNav();
   renderTabContents();
 }
 
-// 底部导航与 tab 顺序/名称保持一致
-const NAV_ICONS = {work:'📋', resume:'📄', jd:'🎯', qa:'💬'};
 function renderBottomNav() {
   const nav = document.getElementById('bottomNav');
   if (!nav) return;
-  const activeKey = document.querySelector('.tab-item.active')?.dataset.tab;
+  const activeKey = document.querySelector('.content-area.active')?.id.replace('tab-','') || tabConfig[0].key;
   nav.innerHTML = tabConfig.map(t => {
     const icon = NAV_ICONS[t.key] || t.icon || '📌';
-    const shortName = t.navName || (t.name.length > 4 ? t.name.substring(0,4) : t.name);
-    return '<div class="nav-item'+(t.key===activeKey?' active':'')+'" data-tab="'+t.key+'"><span class="nav-icon">'+icon+'</span><span>'+shortName+'</span></div>';
+    const name = t.navName || (t.name.length > 5 ? t.name.substring(0,5) : t.name);
+    return '<div class="nav-item'+(t.key===activeKey?' active':'')+'" data-tab="'+t.key+'">'+
+             '<span class="nav-icon">'+icon+'</span><span class="nav-label">'+name+'</span>'+
+           '</div>';
   }).join('');
-  nav.querySelectorAll('.nav-item').forEach(n => n.addEventListener('click', () => switchTab(n.dataset.tab)));
+
+  nav.querySelectorAll('.nav-item').forEach(item => {
+    const key = item.dataset.tab;
+    // 单击切换
+    item.addEventListener('click', () => { if (!dragMoved && !navDblFlag) switchTab(key); });
+    // 双击改名
+    item.addEventListener('dblclick', (e) => { e.preventDefault(); renameNavItem(key); });
+    // 长按拖动排序
+    attachNavTouchDrag(item, key);
+    // 桌面端 HTML5 拖拽
+    item.draggable = true;
+    item.addEventListener('dragstart', e => { dragSrcKey = key; dragMoved = false; item.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
+    item.addEventListener('dragend', () => { item.classList.remove('dragging'); nav.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('drag-over')); setTimeout(()=>dragMoved=false,120); });
+    item.addEventListener('dragover', e => { e.preventDefault(); item.classList.add('drag-over'); });
+    item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+    item.addEventListener('drop', e => {
+      e.preventDefault(); item.classList.remove('drag-over');
+      reorderTabs(dragSrcKey, key); dragMoved = true;
+    });
+  });
 }
 
-// 触屏拖动支持
+let navDblFlag = false;
+function reorderTabs(fromKey, toKey) {
+  if (!fromKey || !toKey || fromKey === toKey) return;
+  const fi = tabConfig.findIndex(x => x.key === fromKey);
+  const ti = tabConfig.findIndex(x => x.key === toKey);
+  if (fi < 0 || ti < 0) return;
+  const [moved] = tabConfig.splice(fi, 1);
+  tabConfig.splice(ti, 0, moved);
+  saveTabs(); renderBottomNav();
+  showToast('板块顺序已调整');
+}
+
+// 底部导航长按拖动（移动端）
 let dragSrcKey = null, dragMoved = false;
-function attachTouchDrag(el, key) {
-  let timer = null, startX = 0, startY = 0, dragging = false;
+function attachNavTouchDrag(el, key) {
+  let timer = null, startX = 0, startY = 0, dragging = false, lp = null;
   el.addEventListener('touchstart', e => {
     const t = e.touches[0]; startX = t.clientX; startY = t.clientY;
     timer = setTimeout(() => {
       dragging = true; dragSrcKey = key; el.classList.add('dragging');
-      if (navigator.vibrate) navigator.vibrate(30);
-    }, 500);
+      if (navigator.vibrate) navigator.vibrate(35);
+      showToast('拖动到目标位置松开即可', 1500);
+    }, 550);
   }, {passive:true});
   el.addEventListener('touchmove', e => {
     const t = e.touches[0];
-    if (!dragging) { if (Math.abs(t.clientX-startX)>8 || Math.abs(t.clientY-startY)>8) clearTimeout(timer); return; }
+    if (!dragging) {
+      if (Math.abs(t.clientX-startX)>10 || Math.abs(t.clientY-startY)>10) clearTimeout(timer);
+      return;
+    }
     e.preventDefault();
-    const target = document.elementFromPoint(t.clientX, t.clientY)?.closest('.tab-item');
-    document.querySelectorAll('.tab-item').forEach(x => x.classList.remove('drag-over'));
+    const target = document.elementFromPoint(t.clientX, t.clientY)?.closest('.nav-item');
+    document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('drag-over'));
     if (target && target !== el) target.classList.add('drag-over');
   }, {passive:false});
   el.addEventListener('touchend', e => {
@@ -1116,21 +1108,28 @@ function attachTouchDrag(el, key) {
     if (!dragging) return;
     dragging = false; el.classList.remove('dragging');
     const t = e.changedTouches[0];
-    const target = document.elementFromPoint(t.clientX, t.clientY)?.closest('.tab-item');
-    document.querySelectorAll('.tab-item').forEach(x => x.classList.remove('drag-over'));
+    const target = document.elementFromPoint(t.clientX, t.clientY)?.closest('.nav-item');
+    document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('drag-over'));
     if (target && target !== el) {
-      const toKey = target.dataset.tab;
-      const fi = tabConfig.findIndex(x => x.key === dragSrcKey);
-      const ti = tabConfig.findIndex(x => x.key === toKey);
-      if (fi >= 0 && ti >= 0) {
-        const [moved] = tabConfig.splice(fi, 1);
-        tabConfig.splice(ti, 0, moved);
-        saveTabs(); renderTabs();
-        showToast('板块顺序已调整');
-      }
+      reorderTabs(dragSrcKey, target.dataset.tab);
+      dragMoved = true;
+      setTimeout(()=>dragMoved=false, 200);
     }
-    dragMoved = true; dragSrcKey = null;
-    setTimeout(() => dragMoved = false, 100);
+    dragSrcKey = null;
+  });
+}
+
+// 双击底部导航改名
+function renameNavItem(key) {
+  const t = tabConfig.find(x => x.key === key);
+  if (!t) return;
+  openPrompt('修改板块名称', t.navName || t.name, function(val) {
+    if (!val) return;
+    t.name = val;
+    t.navName = val;
+    saveTabs(); renderBottomNav();
+    addHistory('重命名板块', '板块改名为「'+val+'」');
+    showToast('板块名称已更新 ✅');
   });
 }
 
@@ -1258,11 +1257,11 @@ function confirmPrompt() {
 function toggleCollapse(h) { h.parentElement.classList.toggle('open'); }
 
 // ============ Toast ============
-function showToast(msg) {
+function showToast(msg, duration) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.style.opacity = '1';
   clearTimeout(t._timeout);
-  t._timeout = setTimeout(() => t.style.opacity = '0', 2000);
+  t._timeout = setTimeout(() => t.style.opacity = '0', duration || 2800);
 }
 
 // ============ 面试问题 ============
@@ -1289,11 +1288,9 @@ function renderAllQuestions() {
     // 该分类下的问题卡片
     items.forEach(({q, idx}) => {
       html += '<div class="q-card'+(q.userAdded?' user-added':'')+'" id="qcard-'+q.id+'" data-cat="'+q.cat+'" data-qid="'+q.id+'">'+
-        // 标题区不再承担展开功能，只放序号/标题/标签/删除/编辑按钮
-        '<div class="q-header"><div class="q-num">'+(idx+1)+'</div><div style="flex:1"><div class="q-title editable" data-key="'+q.id+'_title">'+q.title+'</div><div class="q-tags"><span class="tag tag-blue">'+catLabel(q.cat)+'</span>'+(q.userAdded?'<span class="tag tag-green">自定义</span>':'')+'</div></div>'+(q.userAdded?'<div class="q-delete" onclick="event.stopPropagation();deleteQuestion(\''+q.id+'\')">🗑️</div>':'')+'</div>'+
-        '<div class="q-body"><div class="q-section-label">参考答案</div><div class="q-answer editable" data-key="'+q.id+'_answer">'+(q.answer||'（待补充）')+'</div><div class="q-section-label">答题思路</div><div class="q-thought editable" data-key="'+q.id+'_thought">'+(q.thought||'（待补充）')+'</div></div>'+
-        // 需求4：底部展开条，远离编辑按钮
-        '<div class="card-expand-bar q-expand-bar" onclick="toggleCardExpand(this)"><span class="ceb-text">点击展开</span><span class="ceb-arrow">▼</span></div>'+
+        // 需求2：点击标题区展开/收起（与工作内容项目卡片一致的效果）
+        '<div class="q-header" onclick="toggleQCardOpen(this)"><div class="q-num">'+(idx+1)+'</div><div style="flex:1"><div class="q-title editable" data-key="'+q.id+'_title">'+q.title+'</div><div class="q-tags"><span class="tag tag-blue">'+catLabel(q.cat)+'</span>'+(q.userAdded?'<span class="tag tag-green">自定义</span>':'')+'</div></div><span class="q-arrow">▶</span></div>'+
+        '<div class="q-body"><div class="q-section-label">参考答案</div><div class="q-answer editable" data-key="'+q.id+'_answer">'+(q.answer||'（待补充）')+'</div><div class="q-section-label">答题思路</div><div class="q-thought editable" data-key="'+q.id+'_thought">'+(q.thought||'（待补充）')+'</div>'+(q.userAdded?'<div style="margin-top:10px"><button class="q-del-btn" onclick="event.stopPropagation();deleteQuestion(\''+q.id+'\')">🗑️ 删除此问题</button></div>':'')+'</div>'+
       '</div>';
     });
   });
@@ -1301,11 +1298,12 @@ function renderAllQuestions() {
   initEditable(); applyQFilter();
 }
 
-// 问题卡片展开/收起
-function toggleQCard(header) {
+// 问题卡片展开/收起（点击标题区，效果同工作内容项目卡片）
+function toggleQCardOpen(header) {
   const card = header.parentElement;
   card.classList.toggle('open');
 }
+function toggleQCard(header) { toggleQCardOpen(header); }
 // 分类汇总列表展开/收起
 function toggleGroupList(el) {
   const card = el.closest('.qa-group-card');
@@ -1376,23 +1374,35 @@ function applyQFilter() {
 }
 function addQuestion() { document.getElementById('addQOverlay').classList.add('show'); document.getElementById('addQTitle').value=''; document.getElementById('addQAnswer').value=''; document.getElementById('addQThought').value=''; document.getElementById('addQCat').value='project'; }
 function closeAddQ() { document.getElementById('addQOverlay').classList.remove('show'); }
+let savingQuestion = false;
 function saveNewQuestion() {
+  if (savingQuestion) return;   // 防重复点击
   const title = document.getElementById('addQTitle').value.trim();
   if (!title) { showToast('请输入问题内容'); return; }
-  const q = {title, cat: document.getElementById('addQCat').value, answer: document.getElementById('addQAnswer').value.trim(), thought: document.getElementById('addQThought').value.trim()};
+  const cat = document.getElementById('addQCat').value;
+  const answer = document.getElementById('addQAnswer').value.trim();
+  const thought = document.getElementById('addQThought').value.trim();
+  // 与已有问题重复则提示
+  if (userQuestions.some(x => x.title.trim() === title && x.cat === cat)) {
+    showToast('该问题已存在，未重复添加');
+    return;
+  }
+  savingQuestion = true;
+  const q = {title, cat, answer, thought};
   userQuestions.push(q); saveToStorage('questions', userQuestions);
   addHistory('添加问题', '添加了面试问题「'+title.substring(0,30)+'」');
-  renderAllQuestions(); closeAddQ(); showToast('问题已添加 ✅');
+  renderAllQuestions(); closeAddQ();
+  showToast('✅ 问题已保存成功（共 '+userQuestions.length+' 道自定义问题）', 3200);
+  setTimeout(() => { savingQuestion = false; }, 500);
 }
 function deleteQuestion(qid) {
-  if (!editMode) return;
   const idx = parseInt(qid.replace('uq_',''));
   if (idx >= 0 && idx < userQuestions.length) {
     const title = userQuestions[idx].title;
     if (confirm('确定删除问题「'+title.substring(0,30)+'」吗？')) {
       userQuestions.splice(idx, 1); saveToStorage('questions', userQuestions);
       addHistory('删除问题', '删除了「'+title.substring(0,30)+'」');
-      renderAllQuestions(); showToast('已删除');
+      renderAllQuestions(); showToast('问题已删除');
     }
   }
 }
@@ -1414,12 +1424,11 @@ function saveNewProject() {
   renderUserProjects(); closeAddProj(); showToast('项目已添加 ✅');
 }
 function deleteProject(idx) {
-  if (!editMode) return;
   const title = userProjects[idx].title;
   if (confirm('确定删除项目「'+title.substring(0,30)+'」吗？')) {
     userProjects.splice(idx, 1); saveToStorage('projects', userProjects);
     addHistory('删除项目', '删除了「'+title.substring(0,30)+'」');
-    renderUserProjects(); showToast('已删除');
+    renderUserProjects(); showToast('项目已删除');
   }
 }
 
