@@ -682,8 +682,8 @@ let qaOrder = [];      // 问题全局显示顺序（问题id数组）
 let qaCatOverride = {}; // 问题分类覆盖 {qid: catKey}
 
 // ============ 版本与在线更新 ============
-const APP_VERSION = '5.8';
-const APP_TAG = 'v5.8';  // 当前发布标签，发新版时同步更新
+const APP_VERSION = '5.9';
+const APP_TAG = 'v5.9';  // 当前发布标签，发新版时同步更新
 const REPO = 'xxuan-cell/interview-workbench';
 
 // 多源候选：按可靠性排序，逐个尝试
@@ -1425,13 +1425,13 @@ function renderAllQuestions() {
     // 分类汇总卡片
     html += '<div class="qa-group-card" data-groupcat="'+catKey+'">'+
       '<div class="qa-group-head"><span class="qg-name">'+catLabel(catKey)+'</span><span class="qg-count">'+items.length+' 题</span><span class="qg-toggle" onclick="toggleGroupList(this)">展开 ▾</span></div>'+
-      '<div class="qa-group-list">'+items.map(it => '<div class="qg-item" onclick="jumpToQuestion(\''+it.q.id+'\')"><span class="qg-idx">'+(it.idx+1)+'</span><span class="qg-txt">'+it.q.title.replace(/<[^>]+>/g,'').substring(0,40)+'</span></div>').join('')+'</div>'+
+      '<div class="qa-group-list">'+items.map((it, li) => '<div class="qg-item" onclick="jumpToQuestion(\''+it.q.id+'\')"><span class="qg-idx">'+(li+1)+'</span><span class="qg-txt">'+it.q.title.replace(/<[^>]+>/g,'').substring(0,40)+'</span></div>').join('')+'</div>'+
       '</div>';
-    // 该分类下的问题卡片
-    items.forEach(({q, idx}) => {
+    // 该分类下的问题卡片（序号 = 分类内序号，拖动/移动后自动重排）
+    items.forEach(({q, idx}, li) => {
       html += '<div class="q-card'+(q.userAdded?' user-added':'')+'" id="qcard-'+q.id+'" data-cat="'+q.cat+'" data-qid="'+q.id+'">'+
         // 需求2：点击标题区展开/收起（与工作内容项目卡片一致的效果）
-        '<div class="q-header" onclick="toggleQCardOpen(this)"><div class="q-num">'+(idx+1)+'</div><div style="flex:1"><div class="q-title editable" data-key="'+q.id+'_title">'+q.title+'</div><div class="q-tags"><span class="tag tag-blue">'+catLabel(q.cat)+'</span>'+(q.userAdded?'<span class="tag tag-green">自定义</span>':'')+'</div></div><span class="q-arrow">▶</span></div>'+
+        '<div class="q-header" onclick="toggleQCardOpen(this)"><div class="q-num">'+(li+1)+'</div><div style="flex:1"><div class="q-title editable" data-key="'+q.id+'_title">'+q.title+'</div><div class="q-tags"><span class="tag tag-blue">'+catLabel(q.cat)+'</span>'+(q.userAdded?'<span class="tag tag-green">自定义</span>':'')+'</div></div><span class="q-arrow">▶</span></div>'+
         '<div class="q-body"><div class="q-section-label">参考答案</div><div class="q-answer editable" data-key="'+q.id+'_answer">'+(q.answer||'（待补充）')+'</div><div class="q-section-label">答题思路</div><div class="q-thought editable" data-key="'+q.id+'_thought">'+(q.thought||'（待补充）')+'</div>'+(q.userAdded?'<div style="margin-top:10px"><button class="q-del-btn" onclick="event.stopPropagation();deleteQuestion(\''+q.id+'\')">🗑️ 删除此问题</button></div>':'')+'</div>'+
       '</div>';
     });
@@ -1560,15 +1560,17 @@ function toggleGroupList(el) {
   card.classList.toggle('open');
   el.textContent = card.classList.contains('open') ? '收起 ▴' : '展开 ▾';
 }
-// 从分类汇总跳转到具体问题
+// 从分类汇总跳转到具体问题（自动切换到该问题所在分类tab）
 function jumpToQuestion(qid) {
   const card = document.getElementById('qcard-' + qid);
   if (!card) return;
-  // 确保该问题可见（可能被筛选隐藏）
+  const cat = card.dataset.cat;
   const active = document.querySelector('#qaFilter .toolbar-btn.active');
   const f = active ? active.dataset.filter : 'all';
-  if (f !== 'all' && card.dataset.cat !== f) {
-    document.querySelectorAll('#qaFilter .toolbar-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === 'all'));
+  if (f !== cat) {
+    // 切换到该问题所在的分类tab
+    const tab = [...document.querySelectorAll('#qaFilter .toolbar-btn')].find(b => b.dataset.filter === cat);
+    if (tab) { document.querySelectorAll('#qaFilter .toolbar-btn').forEach(b => b.classList.remove('active')); tab.classList.add('active'); }
     applyQFilter();
   }
   card.classList.add('open');
@@ -1743,7 +1745,8 @@ function renderAddQCatSelect() {
 function applyQFilter() {
   const active = document.querySelector('#qaFilter .toolbar-btn.active');
   const f = active ? active.dataset.filter : 'all';
-  document.querySelectorAll('#qaList .q-card').forEach(c => { c.style.display = (f === 'all' || c.dataset.cat === f) ? '' : 'none'; });
+  // 「全部」视图：只显示分类汇总栏，不罗列问题卡片
+  document.querySelectorAll('#qaList .q-card').forEach(c => { c.style.display = (f !== 'all' && c.dataset.cat === f) ? '' : 'none'; });
   document.querySelectorAll('#qaList .qa-group-card').forEach(c => { c.style.display = (f === 'all' || c.dataset.groupcat === f) ? '' : 'none'; });
 }
 function addQuestion() { document.getElementById('addQOverlay').classList.add('show'); document.getElementById('addQTitle').value=''; document.getElementById('addQAnswer').value=''; document.getElementById('addQThought').value=''; document.getElementById('addQCat').value='project'; }
