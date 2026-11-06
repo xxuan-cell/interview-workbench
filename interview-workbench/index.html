@@ -682,8 +682,8 @@ let qaOrder = [];      // 问题全局显示顺序（问题id数组）
 let qaCatOverride = {}; // 问题分类覆盖 {qid: catKey}
 
 // ============ 版本与在线更新 ============
-const APP_VERSION = '5.7';
-const APP_TAG = 'v5.7';  // 当前发布标签，发新版时同步更新
+const APP_VERSION = '5.8';
+const APP_TAG = 'v5.8';  // 当前发布标签，发新版时同步更新
 const REPO = 'xxuan-cell/interview-workbench';
 
 // 多源候选：按可靠性排序，逐个尝试
@@ -1153,10 +1153,20 @@ function renderBottomNav() {
 
   nav.querySelectorAll('.nav-item').forEach(item => {
     const key = item.dataset.tab;
-    // 单击切换
-    item.addEventListener('click', () => { if (!dragMoved && !navDblFlag) switchTab(key); });
-    // 双击改名
-    item.addEventListener('dblclick', (e) => { e.preventDefault(); renameNavItem(key); });
+    // 单击切换；350ms内连点两下 = 改名（iOS触摸无dblclick，手动检测）
+    item.addEventListener('click', () => {
+      if (dragMoved || navDblFlag) return;
+      if (key) {
+        const now = Date.now();
+        if (navTapState.key === key && now - navTapState.t < 350) {
+          navTapState = {key: null, t: 0};
+          renameNavItem(key);
+          return;
+        }
+        navTapState = {key: key, t: now};
+      }
+      switchTab(key);
+    });
     // 长按拖动排序
     attachNavTouchDrag(item, key);
     // 桌面端 HTML5 拖拽
@@ -1183,6 +1193,7 @@ function renderBottomNav() {
 }
 
 let navDblFlag = false;
+let navTapState = {key: null, t: 0};  // 双击改名检测（iOS无dblclick）
 function reorderTabs(fromKey, toKey) {
   if (!fromKey || !toKey || fromKey === toKey) return;
   const fi = tabConfig.findIndex(x => x.key === fromKey);
@@ -1587,18 +1598,23 @@ function renderQaFilter() {
 
   bar.querySelectorAll('.toolbar-btn').forEach(b => {
     const f = b.dataset.filter;
-    // 点击：筛选（__add 除外）
+    // 点击：筛选；350ms内连点两下同一分类 = 重命名（iOS触摸无dblclick，手动检测）
     b.addEventListener('click', function(e) {
       if (f === '__add') { addQaCat(); return; }
       if (qaDragState.moved) return;  // 刚完成拖动，不触发筛选
+      const now = Date.now();
+      if (f !== 'all' && qaTapState.key === f && now - qaTapState.t < 350) {
+        qaTapState = {key: null, t: 0};
+        renameCat(f);
+        return;
+      }
+      qaTapState = {key: f, t: now};
       bar.querySelectorAll('.toolbar-btn').forEach(x => x.classList.remove('active'));
       this.classList.add('active');
       applyQFilter();
     });
-    // 双击：重命名
+    // 桌面端右键：删除
     if (f !== 'all' && f !== '__add') {
-      b.addEventListener('dblclick', function(e) { e.preventDefault(); renameCat(f); });
-      // 桌面端右键：删除
       b.addEventListener('contextmenu', function(e) { e.preventDefault(); deleteQaCat(f); });
     }
   });
@@ -1606,6 +1622,7 @@ function renderQaFilter() {
   attachQaFilterDrag(bar);
 }
 
+let qaTapState = {key: null, t: 0};  // 双击改名检测（iOS无dblclick）
 // ============ 面试分类：长按拖动排序 / 长按原地删除 ============
 let qaDragState = { timer: null, moved: false, srcKey: null, dragging: false, startX: 0, startY: 0, el: null };
 
