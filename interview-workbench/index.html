@@ -271,6 +271,7 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
     <button class="hbtn" onclick="openSync()">☁️ 数据同步</button>
     <button class="hbtn" onclick="showHistory()">📜 记录</button>
     <button class="hbtn" onclick="openTabManager()">⚙️ 板块</button>
+    <button class="hbtn" onclick="showVersionInfo()">ℹ️ 版本</button>
   </div>
 </div>
 
@@ -597,6 +598,42 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
 <div id="toast" style="position:fixed;top:88px;left:50%;transform:translateX(-50%);background:#2C3E50;color:#FFD100;padding:11px 26px;border-radius:24px;font-size:13px;font-weight:600;z-index:400;pointer-events:none;transition:all .3s;opacity:0;max-width:90vw;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.25)"></div>
 
 <script>
+// ============ 启动时优先加载本地已升级的新版本 ============
+// 原理：升级时把新版 HTML 存进 localStorage；每次打开页面若发现本地版本更新，
+// 立即用本地新版替换当前页面 —— 这样重启/刷新都不会退回旧版。
+(function bootCheckLocalUpdate() {
+  try {
+    var localHtml = localStorage.getItem('iw_app_html');
+    var localVer = localStorage.getItem('iw_app_ver');
+    if (!localHtml || !localVer) return;
+    // 当前文件里的版本（用正则从源码取，避免依赖后面才定义的常量）
+    var m = document.documentElement.outerHTML.match(/const APP_VERSION = '([^']+)'/);
+    var curVer = m ? m[1] : '0';
+    var cmp = function(a, b) {
+      a = a.split('.').map(Number); b = b.split('.').map(Number);
+      for (var i = 0; i < Math.max(a.length, b.length); i++) {
+        if ((a[i]||0) > (b[i]||0)) return 1;
+        if ((a[i]||0) < (b[i]||0)) return -1;
+      }
+      return 0;
+    };
+    if (cmp(localVer, curVer) > 0) {
+      // 本地缓存更新 → 一边替换页面，一边阻止旧脚本继续执行
+      document.open();
+      document.write(localHtml);
+      document.close();
+      // 阻断当前旧页面脚本
+      throw new Error('__LOCAL_UPDATE_APPLIED__');
+    }
+  } catch (e) {
+    if (String(e.message).indexOf('__LOCAL_UPDATE_APPLIED__') === -1) {
+      // 其他异常忽略，正常往下跑
+    } else {
+      throw e; // 让浏览器停止执行旧脚本
+    }
+  }
+})();
+
 // ============ 全局状态 ============
 let editMode = false;
 let currentEditKey = null;
@@ -689,7 +726,7 @@ async function checkUpdate() {
 
   if (isNewer(best.ver, APP_VERSION)) {
     showToast('发现新版本 v' + best.ver + '，正在升级...');
-    setTimeout(() => doUpdate(best.html), 800);
+    setTimeout(() => doUpdate(best.html, best.ver), 800);
   } else {
     showToast('已是最新版本 v' + APP_VERSION + ' ✅');
     btn.textContent = '🔄 升级App';
@@ -697,14 +734,24 @@ async function checkUpdate() {
   }
 }
 
-async function doUpdate(html) {
-  // 用 document.write 方式原地替换，保持当前 URL 不变（不影响 localStorage / 云同步）
+async function doUpdate(html, ver) {
+  // 关键：把新版 HTML 存进 localStorage，之后每次打开页面都会优先用它
+  // 这样即使艾可秀上的文件是旧版，重启/刷新也不会退回
   try {
-    document.open();
-    document.write(html);
-    document.close();
+    const vm = html.match(/const APP_VERSION = '([^']+)'/);
+    const newVer = ver || (vm ? vm[1] : '0');
+    localStorage.setItem('iw_app_html', html);
+    localStorage.setItem('iw_app_ver', newVer);
   } catch (e) {
-    // 极端降级：刷新页面
+    // localStorage 满了，降级为内存替换
+    showToast('存储空间不足，本次升级仅在当前会话生效');
+  }
+  // 用 location.replace 重新加载当前地址；
+  // 由于新版已存入 localStorage，启动钩子 bootCheckLocalUpdate 会立刻用新版渲染，
+  // 这样等价于"真正刷新到新版"，事件绑定也是全新的，不会出现按钮失灵
+  try {
+    location.replace(location.pathname + '?v=' + Date.now());
+  } catch (e) {
     location.reload();
   }
 }
@@ -788,6 +835,21 @@ function addHistory(action, detail) {
   saveToStorage('history', editHistory);
 }
 function showHistory() { document.getElementById('historyPanel').classList.add('show'); renderHistory(); }
+
+// 版本信息面板
+function showVersionInfo() {
+  const cached = localStorage.getItem('iw_app_ver');
+  const hasCache = !!localStorage.getItem('iw_app_html');
+  const info = '📱 当前运行版本：v' + APP_VERSION + '\n' +
+    '💾 本地已缓存版本：' + (hasCache ? ('v' + cached) : '无（使用艾可秀上的文件）') + '\n\n' +
+    '「本地缓存版本」是升级后存在手机上的新版，打开 app 时优先加载它，所以重启不会退回旧版。';
+  if (confirm(info + '\n\n是否清除本地缓存版本？（仅用于升级出问题时回退，会丢失已升级的功能）')) {
+    localStorage.removeItem('iw_app_html');
+    localStorage.removeItem('iw_app_ver');
+    showToast('已清除本地缓存版本，即将重新加载');
+    setTimeout(() => location.replace(location.pathname + '?r=' + Date.now()), 900);
+  }
+}
 function closeHistory() { document.getElementById('historyPanel').classList.remove('show'); }
 function filterHistory(type, btn) {
   historyFilter = type;
@@ -1897,18 +1959,22 @@ function openSync() {
   document.getElementById('syncStatus').textContent = saved ? '当前绑定同步码：' + saved : '尚未绑定同步码';
 }
 function closeSync() { document.getElementById('syncOverlay').classList.remove('show'); }
+// 这些 key 不参与云同步（程序文件本身、同步码）
+const SYNC_EXCLUDE = ['iw_sync_code', 'iw_app_html', 'iw_app_ver'];
 function collectSyncData() {
   const data = {};
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
-    if (k.startsWith('iw_') && k !== 'iw_sync_code') data[k] = localStorage.getItem(k);
+    if (k.startsWith('iw_') && SYNC_EXCLUDE.indexOf(k) === -1) data[k] = localStorage.getItem(k);
   }
   data.iw_sync_time = new Date().toLocaleString();
   return data;
 }
 function applySyncData(data) {
   let count = 0;
-  Object.keys(data).forEach(k => { if (k.startsWith('iw_')) { localStorage.setItem(k, data[k]); count++; } });
+  Object.keys(data).forEach(k => {
+    if (k.startsWith('iw_') && SYNC_EXCLUDE.indexOf(k) === -1) { localStorage.setItem(k, data[k]); count++; }
+  });
   return count;
 }
 async function pushSync() {

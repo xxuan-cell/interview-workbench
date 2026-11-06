@@ -1,0 +1,2057 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>面试工作台</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--primary:#FFD100;--primary-dark:#E6BC00;--secondary:#2C3E50;--accent:#FF6B35;--bg:#F5F6FA;--card-bg:#FFFFFF;--text-main:#1A1A2E;--text-sub:#6B7280;--text-light:#9CA3AF;--border:#E5E7EB;--success:#10B981;--info:#3B82F6;--radius:12px}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue',sans-serif;background:var(--bg);color:var(--text-main);line-height:1.6;padding-bottom:90px;-webkit-font-smoothing:antialiased}
+.header{position:sticky;top:0;z-index:100;background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);color:var(--secondary);padding:44px 16px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.08);display:flex;justify-content:space-between;align-items:flex-end}
+.header h1{font-size:20px;font-weight:700;margin-bottom:4px}
+.header p{font-size:12px;opacity:0.8}
+.header .ws-name{cursor:pointer;position:relative;display:inline-flex;align-items:center;gap:4px}
+.header .ws-name::after{content:'✎';font-size:12px;opacity:0;transition:opacity .15s}
+body.edit-mode .header .ws-name::after{opacity:.6}
+.header .ws-sub{cursor:pointer}
+.header-btns{display:flex;gap:6px}
+.hbtn{font-size:10px;background:var(--secondary);color:var(--primary);border:none;padding:6px 10px;border-radius:20px;font-weight:700;cursor:pointer;white-space:nowrap}
+.hbtn.active{background:#fff;color:var(--accent)}
+/* Tab 内编辑栏 */
+.tab-edit-bar{display:flex;gap:8px;margin-bottom:12px;align-items:center}
+.tab-edit-bar .teb-btn{flex-shrink:0;font-size:12px;background:var(--secondary);color:var(--primary);border:none;padding:8px 14px;border-radius:20px;font-weight:700;cursor:pointer}
+.tab-edit-bar .teb-btn.on{background:var(--accent);color:#fff}
+.tab-edit-bar .teb-hint{flex:1;font-size:11px;color:var(--text-light);text-align:right}
+.content-area{display:none;padding:16px;animation:fadeIn .3s ease}
+.content-area.active{display:block}
+
+/* 板块排序 / 拖动 */
+body.edit-mode /* 板块管理面板 */
+.tab-mgr-row{display:flex;align-items:center;gap:6px;padding:8px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;font-size:13px;background:#fff}
+.tab-mgr-row .tm-name{flex:1;font-weight:600;color:var(--text-main);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tab-mgr-row .tm-btn{width:28px;height:28px;border:1px solid var(--border);background:#F9FAFB;border-radius:6px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tab-mgr-row .tm-btn:disabled{opacity:.3}
+.tab-mgr-row .tm-del{color:#DC2626;border-color:#FEE2E2;background:#FEF2F2}
+/* 面试问题分类筛选按钮带编辑小图标 */
+body.edit-mode .qa-filter-wrap .toolbar-btn{position:relative;padding-right:16px}
+body.edit-mode .qa-filter-wrap .toolbar-btn::after{content:'✎';position:absolute;right:2px;top:0;font-size:9px;opacity:.5}
+/* 自定义板块卡片 */
+.custom-card{background:var(--card-bg);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.05);position:relative}
+.custom-card .cc-del{position:absolute;right:8px;top:8px;font-size:11px;color:#DC2626;background:#FEF2F2;border:1px solid #FEE2E2;border-radius:10px;padding:2px 7px;cursor:pointer;display:none}
+body.edit-mode .custom-card .cc-del{display:block}
+.custom-card .cc-text{font-size:13px;color:var(--text-main);line-height:1.8;min-height:20px}
+.custom-card .cc-text:empty::before{content:'点击这里输入内容...';color:var(--text-light)}
+.add-card-btn{width:100%;padding:12px;border:1px dashed var(--border);background:#fff;border-radius:var(--radius);color:var(--text-sub);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:12px}
+.add-card-btn:active{background:#F9FAFB}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.card{background:var(--card-bg);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.05);position:relative}
+.card-title{font-size:16px;font-weight:700;color:var(--secondary);margin-bottom:12px;display:flex;align-items:center;gap:8px;padding-right:38px}
+.card-title:has(.jd-refresh-btn){padding-right:0}
+.card-title .jd-refresh-btn{margin-left:auto}
+/* 卡片级编辑按钮（醒目版） */
+.card-edit-btn{position:absolute;top:10px;right:10px;z-index:6;font-size:11px;background:#FFF3E0;color:#E65100;border:1px solid #FFCC80;padding:4px 9px;border-radius:12px;font-weight:700;cursor:pointer;line-height:1.4;box-shadow:0 1px 3px rgba(230,81,0,.15)}
+.card-edit-btn::after{content:'编辑'}
+.card-edit-btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.card-edit-btn.on::after{content:'完成'}
+.card.card-editing{box-shadow:0 0 0 2px var(--accent),0 2px 8px rgba(255,107,53,0.15)}
+.card.card-editing .editable{border:1px dashed rgba(255,107,53,0.5);border-radius:4px;padding:1px 3px;margin:-1px -3px}
+.card .collapsible .card-edit-btn{display:none}
+/* 需求3：避免刷新按钮与铅笔按钮重叠 */
+.jd-summary-card .card-title{padding-right:78px}
+.jd-summary-card .card-edit-btn{right:44px}
+/* 需求3：右下角悬浮加号 */
+.fab-add{position:fixed;right:calc(50% - 240px + 20px);bottom:96px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#FF8A50);color:#fff;font-size:28px;font-weight:400;line-height:1;border:none;box-shadow:0 4px 14px rgba(255,107,53,.45);cursor:pointer;z-index:120;display:flex;align-items:center;justify-content:center}
+@media(max-width:520px){.fab-add{right:20px}}
+.fab-add:active{transform:scale(.94);box-shadow:0 2px 8px rgba(255,107,53,.5)}
+/* 需求3+4：卡片底部展开条 */
+.card-expand-bar{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 0 2px;margin-top:10px;border-top:1px dashed var(--border);font-size:12px;color:var(--text-sub);font-weight:600;cursor:pointer;user-select:none}
+.card-expand-bar:active{color:var(--accent)}
+.card-expand-bar .ceb-arrow{font-size:10px;transition:transform .25s}
+.card.open > .card-expand-bar .ceb-arrow{transform:rotate(180deg)}
+.card > .card-collapse-body{display:none}
+.card.open > .card-collapse-body{display:block}
+/* JD 汇总卡片 */
+.jd-refresh-btn{margin-left:auto;font-size:12px;width:26px;height:26px;border-radius:50%;border:1px solid var(--border);background:#F9FAFB;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.jd-refresh-btn:active{background:var(--primary)}
+.jd-sum-item{display:flex;align-items:center;gap:8px;padding:10px 10px;border-radius:8px;background:#F8F9FB;margin-bottom:6px;cursor:pointer;transition:background .15s}
+.jd-sum-item:active{background:#FFF3E0}
+.jd-sum-item .js-idx{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--secondary);color:var(--primary);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.jd-sum-item .js-title{flex:1;font-size:13px;color:var(--text-main);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jd-sum-item .js-score{flex-shrink:0;font-size:11px;color:var(--accent);font-weight:700}
+.jd-sum-item .js-arrow{flex-shrink:0;font-size:11px;color:var(--text-light)}
+.jd-sum-empty{text-align:center;color:var(--text-light);font-size:12px;padding:16px}
+.section-label{font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px;display:flex;align-items:center;gap:6px}
+.section-label::before{content:'';width:3px;height:14px;background:var(--primary);border-radius:2px}
+.info-row{display:flex;margin-bottom:6px;font-size:13px;line-height:1.7}
+.info-row .label{flex-shrink:0;width:72px;color:var(--text-light);font-weight:600}
+.info-row .value{flex:1;color:var(--text-main)}
+.tag-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.tag{font-size:11px;padding:3px 10px;border-radius:4px;background:#FFF8E1;color:#B8860B;font-weight:500}
+.tag-blue{background:#E3F2FD;color:#1565C0}
+.tag-green{background:#E8F5E9;color:#2E7D32}
+.tag-orange{background:#FFF3E0;color:#E65100}
+.tag-red{background:#FEE2E2;color:#DC2626}
+.tag-purple{background:#F3E5F5;color:#7B1FA2}
+.body-text{font-size:13px;color:var(--text-sub);line-height:1.8}
+.body-text strong{color:var(--text-main);font-weight:600}
+.highlight-box{background:#F0F4FF;border-left:3px solid var(--info);padding:10px 12px;border-radius:0 8px 8px 0;font-size:13px;color:var(--text-sub);margin:8px 0}
+.data-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:8px 0}
+.data-item{text-align:center;background:#F8F9FB;padding:10px;border-radius:8px}
+.data-item .num{font-size:20px;font-weight:700;color:var(--accent)}
+.data-item .desc{font-size:11px;color:var(--text-light);margin-top:2px}
+.collapsible{background:var(--card-bg);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05);position:relative}
+.collapsible-header{padding:14px 16px;display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600;color:var(--secondary);padding-right:44px}
+.collapsible-header .arrow{transition:transform .3s;font-size:12px;color:var(--text-light);display:none}
+.collapsible.open .arrow{transform:rotate(90deg)}
+.collapsible-body{display:none;padding:0 16px 16px;border-top:1px solid var(--border)}
+.collapsible.open .collapsible-body{display:block;animation:slideDown .3s ease}
+.collapsible > .card-expand-bar{margin-top:0;padding:11px 0;background:#FCFCFD}
+@keyframes slideDown{from{opacity:0;max-height:0}to{opacity:1;max-height:3000px}}
+.q-card{background:var(--card-bg);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05);position:relative}
+.q-header{padding:14px 16px;background:linear-gradient(135deg,#FFF8E1 0%,#FFFDE7 100%);display:flex;gap:10px;align-items:flex-start;cursor:pointer;padding-right:66px}
+.q-num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--secondary);color:var(--primary);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.q-title{font-size:14px;font-weight:600;color:var(--text-main);line-height:1.5;flex:1}
+.q-tags{display:flex;gap:6px;margin-top:6px}
+.q-arrow{flex-shrink:0;font-size:11px;color:var(--text-light);transition:transform .3s;margin-top:5px}
+.q-card.open .q-arrow{transform:rotate(90deg)}
+.q-card.card-editing{box-shadow:0 0 0 2px var(--accent)}
+.q-card.card-editing .editable{border:1px dashed rgba(255,107,53,.5);border-radius:4px;padding:1px 3px;margin:-1px -3px}
+.q-body{padding:14px 16px;display:none}
+.q-card.open .q-body{display:block;animation:slideDown .25s ease}
+.q-del-btn{width:100%;padding:9px;border-radius:8px;border:1px solid #FECACA;background:#FEF2F2;color:#DC2626;font-size:12px;font-weight:600;cursor:pointer}
+.q-del-btn:active{background:#FEE2E2}
+/* 分类汇总卡片 */
+.qa-group-card{background:#EEF6FF;border:1px solid #CCE4FF;border-radius:var(--radius);padding:12px 14px;margin-bottom:10px}
+.qa-group-head{display:flex;align-items:center;gap:8px;cursor:pointer}
+.qg-name{font-size:14px;font-weight:700;color:#0369A1;flex:1}
+.qg-count{font-size:11px;background:#0369A1;color:#fff;padding:2px 8px;border-radius:10px;font-weight:600}
+.qg-toggle{font-size:11px;color:#0369A1;font-weight:600}
+.qa-group-list{display:none;margin-top:10px;border-top:1px dashed #CCE4FF;padding-top:8px}
+.qa-group-card.open .qa-group-list{display:block}
+.qg-item{display:flex;gap:8px;align-items:baseline;padding:5px 4px;font-size:12px;color:var(--text-sub);cursor:pointer;border-radius:6px}
+.qg-item:active{background:#E0F0FF}
+.qg-idx{flex-shrink:0;color:#0369A1;font-weight:700;font-size:11px;min-width:16px}
+.qg-txt{flex:1;line-height:1.5;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.q-section-label{font-size:11px;font-weight:700;color:var(--accent);margin-bottom:6px;display:flex;align-items:center;gap:4px}
+.q-answer{font-size:13px;color:var(--text-main);line-height:1.8;background:#F8F9FB;padding:10px 12px;border-radius:8px;margin-bottom:10px}
+.q-thought{font-size:12px;color:var(--text-sub);line-height:1.7;background:#FFF3E0;padding:10px 12px;border-radius:8px;border-left:3px solid var(--accent)}
+.q-thought strong{color:var(--accent)}
+.resume-header{text-align:center;padding:20px 0}
+.resume-name{font-size:22px;font-weight:700;color:var(--secondary)}
+.resume-meta{font-size:12px;color:var(--text-sub);margin-top:6px;line-height:1.8}
+.resume-section{margin-top:16px}
+.resume-section-title{font-size:15px;font-weight:700;color:var(--secondary);padding-bottom:6px;border-bottom:2px solid var(--primary);margin-bottom:10px}
+.timeline-item{position:relative;padding-left:20px;padding-bottom:16px;border-left:2px solid var(--border)}
+.timeline-item:last-child{border-left:2px solid transparent}
+.timeline-item::before{content:'';position:absolute;left:-6px;top:2px;width:10px;height:10px;border-radius:50%;background:var(--primary);border:2px solid white;box-shadow:0 0 0 1px var(--border)}
+.timeline-date{font-size:11px;color:var(--text-light);font-weight:600}
+.timeline-title{font-size:14px;font-weight:600;color:var(--text-main);margin:2px 0}
+.timeline-company{font-size:12px;color:var(--accent);font-weight:600;margin-bottom:4px}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card-bg);display:flex;border-top:1px solid var(--border);padding:8px 0 20px;z-index:100;max-width:480px;margin:0 auto}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:var(--text-light);cursor:pointer;transition:color .2s;user-select:none;-webkit-user-select:none;position:relative;padding:0 2px}
+.nav-item.active{color:var(--secondary)}
+.nav-item .nav-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.nav-item.dragging{opacity:.45;transform:scale(.92)}
+.nav-item.drag-over{background:#FFF3E0;border-radius:8px}
+.nav-item.drag-over::before{content:'';position:absolute;left:-2px;top:6px;bottom:6px;width:3px;background:var(--accent);border-radius:2px}
+.nav-icon{font-size:20px;line-height:1}
+.toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.toolbar-btn{flex:1 0 auto;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:white;font-size:11px;color:var(--text-sub);text-align:center;cursor:pointer;font-weight:500}
+.toolbar-btn.active{background:var(--secondary);color:var(--primary);border-color:var(--secondary)}
+.app-container{max-width:480px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative}
+@media(min-width:481px){body{background:#E5E7EB}}
+
+/* 编辑相关 */
+.editable{position:relative;border-radius:6px;transition:all .15s}
+body.edit-mode .editable{border:1px dashed transparent}
+body.edit-mode .editable:hover,body.edit-mode .editable:active{border-color:var(--accent);background:rgba(255,107,53,0.03)}
+body.edit-mode .editable::after{content:'✏️';position:absolute;right:4px;top:4px;font-size:10px;opacity:0;pointer-events:none;transition:opacity .15s}
+body.edit-mode .editable:hover::after,body.edit-mode .editable:active::after{opacity:.7}
+.edit-overlay,.add-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;justify-content:center;align-items:flex-end}
+.edit-overlay.show,.add-overlay.show{display:flex}
+.panel{background:white;width:100%;max-width:480px;border-radius:16px 16px 0 0;padding:16px;max-height:85vh;display:flex;flex-direction:column;overflow-y:auto}
+.panel h3{font-size:15px;color:var(--secondary);margin-bottom:12px;font-weight:700}
+.panel input,.panel textarea,.panel select{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;font-family:inherit;outline:none;color:var(--text-main);margin-bottom:10px}
+.panel textarea{min-height:120px;line-height:1.7;resize:vertical}
+.panel input:focus,.panel textarea:focus,.panel select:focus{border-color:var(--accent)}
+.panel .form-row{display:flex;gap:8px;margin-bottom:10px}
+.panel .form-row>*{flex:1}
+.panel-actions{display:flex;gap:8px;margin-top:8px}
+.panel-actions button{flex:1;padding:12px;border-radius:8px;font-size:14px;font-weight:600;border:none;cursor:pointer}
+.btn-cancel{background:#F3F4F6;color:var(--text-sub)}
+.btn-save{background:var(--accent);color:white}
+.btn-danger{background:#FEE2E2;color:#DC2626}
+.edit-hint{display:none;text-align:center;font-size:11px;color:var(--text-light);padding:6px;background:#FFF8E1;border-radius:8px;margin-bottom:12px}
+body.edit-mode .edit-hint{display:block}
+.reset-bar{display:none;justify-content:center;gap:8px;margin-bottom:12px}
+body.edit-mode .reset-bar{display:flex}
+.reset-bar button{background:#FEE2E2;color:#DC2626;border:none;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer}
+.editable-info{font-size:10px;color:var(--accent);margin-top:2px;display:none}
+body.edit-mode .editable-info{display:block}
+
+/* 添加按钮 */
+.add-btn{display:block;width:100%;padding:14px;border:2px dashed var(--border);border-radius:var(--radius);background:transparent;color:var(--text-light);font-size:14px;font-weight:600;cursor:pointer;margin-bottom:12px;transition:all .2s}
+.add-btn:hover,.add-btn:active{border-color:var(--accent);color:var(--accent)}
+
+/* 用户添加的问题 */
+.q-card.user-added .q-header{background:linear-gradient(135deg,#E8F5E9 0%,#C8E6C9 100%)}
+.q-card.user-added .q-num{background:var(--success)}
+.q-card .q-delete{display:none;font-size:18px;cursor:pointer;color:var(--text-light);padding:0 4px}
+body.edit-mode .q-card.user-added .q-delete{display:block}
+
+/* 用户添加的项目 */
+.collapsible.user-added .collapsible-header{background:#F8F9FB}
+body.edit-mode .collapsible.user-added .collapsible-header::after{content:'🗑️';font-size:14px;cursor:pointer}
+
+/* JD输入区 */
+.jd-input-area{margin-bottom:12px}
+.jd-input-area textarea{width:100%;min-height:100px;border:2px solid var(--border);border-radius:var(--radius);padding:12px;font-size:13px;font-family:inherit;line-height:1.7;resize:vertical;outline:none;margin-bottom:8px}
+.jd-input-area textarea:focus{border-color:var(--accent)}
+.jd-save-row{display:flex;gap:8px;align-items:center}
+.jd-save-row input{flex:1;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;outline:none}
+.jd-save-row button{padding:10px 16px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+.jd-card{margin-bottom:12px}
+.jd-card .card-title{display:flex;justify-content:space-between;align-items:center}
+.jd-card .card-title span{font-size:11px;color:var(--text-light);font-weight:400}
+
+/* JD分析结果 */
+.jd-analysis{background:#F0F9FF;border:1px solid #BAE6FD;border-radius:12px;padding:14px;margin-top:12px}
+.jd-analysis-title{font-size:14px;font-weight:700;color:#0369A1;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.jd-match-score{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.jd-score-bar{flex:1;height:8px;background:#E0F2FE;border-radius:4px;overflow:hidden}
+.jd-score-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--primary));border-radius:4px;transition:width .5s}
+.jd-score-text{font-size:18px;font-weight:700;color:var(--accent);min-width:48px;text-align:right}
+.jd-analysis-section{margin-bottom:12px}
+.jd-analysis-section-title{font-size:12px;font-weight:700;color:#0369A1;margin-bottom:6px}
+.jd-analysis-section ul{margin:0;padding-left:16px;font-size:12px;color:var(--text-sub);line-height:1.8}
+.jd-analysis-section li{margin-bottom:4px}
+.jd-script{background:#FFF8E1;border-left:3px solid var(--primary);padding:10px 12px;border-radius:0 8px 8px 0;font-size:12px;color:var(--text-sub);line-height:1.8}
+.jd-selfintro{background:linear-gradient(135deg,#EFF6FF 0%,#DBEAFE 100%);border-left:3px solid #3B82F6;padding:12px 14px;border-radius:0 10px 10px 0;font-size:13px;color:var(--text-main);line-height:1.9;margin-bottom:12px}
+.jd-selfintro p{margin-bottom:6px}
+.jd-selfintro .hi-section{font-weight:700;color:#1D4ED8;font-size:12px;margin-bottom:4px;display:flex;align-items:center;gap:4px}
+.jd-suggest-q{margin-bottom:14px;border-bottom:1px dashed var(--border);padding-bottom:12px}
+.jd-suggest-q:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.jd-suggest-q .sq-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--secondary);color:var(--primary);font-size:11px;font-weight:700;margin-right:8px;flex-shrink:0}
+.jd-suggest-q .sq-title{font-size:13px;font-weight:600;color:var(--text-main);margin-bottom:6px;display:flex;align-items:flex-start}
+.jd-suggest-q .sq-hint{font-size:11px;color:var(--text-light);line-height:1.7;background:#F8F9FB;padding:8px 10px;border-radius:6px;margin-top:4px}
+.jd-suggest-q .sq-hint strong{color:var(--accent)}
+
+/* 历史记录 */
+.history-panel{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:250;justify-content:center;align-items:flex-end}
+.history-panel.show{display:flex}
+.history-content{background:white;width:100%;max-width:480px;border-radius:16px 16px 0 0;padding:16px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden}
+.history-list{flex:1;overflow-y:auto;margin-top:8px}
+.history-item{padding:10px;border-bottom:1px solid var(--border);font-size:12px;line-height:1.6}
+.history-item .hi-time{color:var(--text-light);font-size:10px}
+.history-item .hi-action{color:var(--accent);font-weight:600}
+.history-item .hi-detail{color:var(--text-sub);word-break:break-all}
+.history-empty{text-align:center;color:var(--text-light);padding:30px;font-size:13px}
+
+.proj-delete-btn{display:none;font-size:12px;background:#FEE2E2;color:#DC2626;border:none;padding:4px 10px;border-radius:12px;cursor:pointer;margin-left:8px}
+body.edit-mode .proj-delete-btn{display:inline-block}
+body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4px}
+
+/* 分析按钮 */
+.analyze-btn{background:linear-gradient(135deg,var(--accent),#FF8A50);color:white;border:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.analyze-btn:disabled{opacity:.6;cursor:not-allowed}
+</style>
+</head>
+<body>
+<div class="app-container">
+<div class="header">
+  <div>
+    <h1 class="ws-name" id="wsName" onclick="editWsName()">面试工作台</h1>
+    <p class="ws-sub" id="wsSub" onclick="editWsSub()">项目管理思维 · 结构化备战</p>
+  </div>
+  <div class="header-btns">
+    <button class="hbtn" id="updateBtn" onclick="checkUpdate()">🔄 升级App</button>
+    <button class="hbtn" onclick="openSync()">☁️ 数据同步</button>
+    <button class="hbtn" onclick="showHistory()">📜 记录</button>
+    <button class="hbtn" onclick="openTabManager()">⚙️ 板块</button>
+    <button class="hbtn" onclick="showVersionInfo()">ℹ️ 版本</button>
+  </div>
+</div>
+
+<!-- ============ 工作内容 ============ -->
+<div class="content-area active" id="tab-work">
+  <div class="reset-bar">
+    <button onclick="resetAllData()">🔄 恢复全部原始</button>
+    <button onclick="addProject()">➕ 添加新项目</button>
+  </div>
+
+  <div class="card"><div class="card-title editable" data-key="work_overview_title">工作经历总览</div>
+    <div class="timeline-item">
+      <div class="timeline-date">2023.01 — 2025.06 | 3.5年</div>
+      <div class="timeline-title">公共事务部 · 综合运营（外包）</div>
+      <div class="timeline-company">美团</div>
+      <div class="body-text editable" data-key="overview_meituan">负责大型线下展会活动统筹执行、供应商招商会组织、APP主题页运营搭建、部门运营SOP体系建设及采购管理，沉淀体系化SOP供部门长期复用。</div>
+      <div class="editable-info">点击上方文字编辑</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-date">更早 | 2.5年</div>
+      <div class="timeline-title">卖家端客服中心 · Coach</div>
+      <div class="timeline-company">亚马逊</div>
+      <div class="body-text editable" data-key="overview_amazon">负责一线客服疑难case升级处理、新���实操指导及成熟员工再培训，总结共性问题并优化操作流程、迭代FAQ知识库，与管理者推进标准政策执行。</div>
+      <div class="editable-info">点击上方文字编辑</div>
+    </div>
+  </div>
+
+  <div class="collapsible open" data-proj="1">
+    <div class="collapsible-header" onclick="toggleCollapse(this)"><span>📋 项目一：服贸会美团展区活动执行</span><span class="arrow">▶</span></div>
+    <div class="collapsible-body">
+      <div class="section-label">项目背景</div>
+      <div class="body-text editable" data-key="p1_bg">2023年、2025年服贸会（国家级展会），美团展区需统筹10余条业务线联合参展，是展示公司综合实力与政府关系的关键窗口。</div>
+      <div class="section-label">角色与职责</div>
+      <div class="info-row"><span class="label">角色</span><span class="value editable" data-key="p1_role">展区执行总负责人</span></div>
+      <div class="info-row"><span class="label">核心职责</span><span class="value editable" data-key="p1_duty">端到端统筹展会方案对齐、布展执行、现场保障及撤场闭环</span></div>
+      <div class="section-label">执行过程（PM五阶段）</div>
+      <div class="body-text editable" data-key="p1_process"><strong>① 启动</strong>：组织会前Kickoff，与美团10余条业务线逐一对齐参展意愿、参展形式及分工安排<br><strong>② 规划</strong>：组织布展供应商招标Brief、设计方案敲定，制定周站会机制（每周一次）跟踪进度<br><strong>③ 执行</strong>：监督搭建施工，统筹物料进场/陈列/撤场；统计参展人员信息、申请并分发证件<br><strong>④ 监控</strong>：保障展会期间业务、PR、GA各岗人员到位、设备无故障、风险预控<br><strong>⑤ 收尾</strong>：组织物料撤场，将现场合作资源（供应商名片等）交付各业务线，合同签署打款</div>
+      <div class="highlight-box editable" data-key="p1_highlight"><strong>方法论沉淀：</strong>服贸会执行checklist、参会人员手册等体系化SOP，供部门后续复用。</div>
+    </div>
+  </div>
+
+  <div class="collapsible" data-proj="2">
+    <div class="collapsible-header" onclick="toggleCollapse(this)"><span>📋 项目二：美团供应商招商会（4场）</span><span class="arrow">▶</span></div>
+    <div class="collapsible-body">
+      <div class="section-label">项目背景</div>
+      <div class="body-text editable" data-key="p2_bg">GA部门对接政府加强公司正向价值并扶持业务露出，帮助优选快驴业务招商。2024年共组织4场招商会，每场供应商到场300+。</div>
+      <div class="section-label">角色与职责</div>
+      <div class="info-row"><span class="label">角色</span><span class="value editable" data-key="p2_role">招商会组织与现场执行负责人</span></div>
+      <div class="info-row"><span class="label">核心职责</span><span class="value editable" data-key="p2_duty">会前方案对齐、物料统筹、人员管理、现场主持与控台、会后沉淀</span></div>
+      <div class="section-label">执行过程（PM五阶段）</div>
+      <div class="body-text editable" data-key="p2_process"><strong>① 启动</strong>：会前与业务方案对齐，收集整合各业务线PPT；各地政府牵头给定参会供应商名单，美团方业务联系到场并制作发放邀请函<br><strong>② 规划</strong>：统筹场地和物料布置，组织周站会（每周一次），拉建微信群沟通<br><strong>③ 执行</strong>：参会人员统计（外部GA确认专家、政府领导到会情况；内部确认业务参会名单），现场彩排、主持、控台，安排业务引导供应商入场及后续洽谈<br><strong>④ 监控</strong>：现场突发应对，保障流程顺畅<br><strong>⑤ 收尾</strong>：会后沉淀站会信息、业务问题及需求、稿件等</div>
+      <div class="highlight-box editable" data-key="p2_highlight"><strong>创新解决：</strong>针对供应商无法区分美团业务人员的痛点，采用统一服装+设计臂贴+携带工牌+PPT呈现企业微信/群的方式，降低供应商沟通难度。</div>
+      <div class="section-label">关键数据</div>
+      <div class="data-grid">
+        <div class="data-item"><div class="num editable" data-key="p2_data1">4场</div><div class="desc">招商会场次</div></div>
+        <div class="data-item"><div class="num editable" data-key="p2_data2">300+</div><div class="desc">每场供应商到场</div></div>
+        <div class="data-item"><div class="num editable" data-key="p2_data3">~500</div><div class="desc">业务达成合作数</div></div>
+        <div class="data-item"><div class="num">SOP</div><div class="desc">checklist沉淀</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="collapsible" data-proj="3">
+    <div class="collapsible-header" onclick="toggleCollapse(this)"><span>📋 项目三：美团APP主题页搭建投放</span><span class="arrow">▶</span></div>
+    <div class="collapsible-body">
+      <div class="section-label">项目背景</div>
+      <div class="body-text editable" data-key="p3_bg">根据政府号召活动主题，牵头美团多条业务线整合促销方案，聚合呈现在APP主题页面，并投放核心流量资源位。</div>
+      <div class="section-label">角色与职责</div>
+      <div class="info-row"><span class="label">角色</span><span class="value editable" data-key="p3_role">主题页运营牵头人</span></div>
+      <div class="info-row"><span class="label">核心职责</span><span class="value editable" data-key="p3_duty">跨业务线方案整合、主视觉统筹设计、资源位投放、数据复盘</span></div>
+      <div class="section-label">执行过程</div>
+      <div class="body-text editable" data-key="p3_process"><strong>① 业务对齐</strong>：牵头小象、闪购、外卖、歪马、门票、酒店、必吃榜等业务线，整合活动时间内的促销方案<br><strong>② 视觉统筹</strong>：统筹设计团队设计主视觉，聚合呈现在美团APP专题页面<br><strong>③ 资源投放</strong>：投放搜索资源位、猜喜位、开屏图等核心流量入口<br><strong>④ 数据复盘</strong>：会后统计页面浏览量、成交量等数据并汇报</div>
+    </div>
+  </div>
+
+  <div class="collapsible" data-proj="4">
+    <div class="collapsible-header" onclick="toggleCollapse(this)"><span>📋 项目四：部门运营工具包建设</span><span class="arrow">▶</span></div>
+    <div class="collapsible-body">
+      <div class="section-label">问题背景</div>
+      <div class="body-text editable" data-key="p4_bg">内部运营流程不清晰、跨部门协作响应延迟（如政府要单车卡资源找不到人），影响部门对外响应效率。</div>
+      <div class="section-label">解决方案</div>
+      <div class="body-text editable" data-key="p4_solution">搭建部门运营工具包，沉淀：<br><strong>①</strong> 业务协作通讯录<br><strong>②</strong> 拎包组织流程<br><strong>③</strong> 研究院日常运营工作流程</div>
+      <div class="highlight-box editable" data-key="p4_highlight"><strong>价值：</strong>缩短部门协作前期准备工作，推动成为部门长期工作法，体系化解决跨部门协作痛点。</div>
+    </div>
+  </div>
+
+  <div class="collapsible" data-proj="5">
+    <div class="collapsible-header" onclick="toggleCollapse(this)"><span>📋 项目五&六：采购管理与研究院运营</span><span class="arrow">▶</span></div>
+    <div class="collapsible-body">
+      <div class="section-label">物资/服务采购管理</div>
+      <div class="info-row"><span class="label">角色</span><span class="value editable" data-key="p5_role">部门采购负责人</span></div>
+      <div class="info-row"><span class="label">核心职责</span><span class="value editable" data-key="p5_duty">独立对接5+核心供应商，完成合同签订及年度结算</span></div>
+      <div class="section-label">研究院内部运营</div>
+      <div class="info-row"><span class="label">角色</span><span class="value editable" data-key="p6_role">内部群发号 & 公众号运营</span></div>
+      <div class="info-row"><span class="label">策略</span><span class="value editable" data-key="p6_strategy">内容分层推送</span></div>
+      <div class="section-label">关键成果</div>
+      <div class="data-grid">
+        <div class="data-item"><div class="num editable" data-key="p5_data1">5+</div><div class="desc">核心供应商管理</div></div>
+        <div class="data-item"><div class="num editable" data-key="p5_data2">+4%</div><div class="desc">内部群发号阅读率提升</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="collapsible" data-proj="6">
+    <div class="collapsible-header" onclick="toggleCollapse(this)"><span>📋 项目七：亚马逊客服中心Coach</span><span class="arrow">▶</span></div>
+    <div class="collapsible-body">
+      <div class="section-label">项目背景</div>
+      <div class="body-text editable" data-key="p7_bg">亚马逊卖家端客服中心，Coach岗位需处理一线客服升级的疑难case，并承担团队培训与流程优化职责。</div>
+      <div class="section-label">角色与职责</div>
+      <div class="info-row"><span class="label">角色</span><span class="value editable" data-key="p7_role">客服中心 Coach</span></div>
+      <div class="info-row"><span class="label">核心职责</span><span class="value editable" data-key="p7_duty">疑难case升级处理、新人实操指导、成熟员工再培训、FAQ知识库迭代</span></div>
+      <div class="section-label">执行过程</div>
+      <div class="body-text editable" data-key="p7_process"><strong>① Case处理</strong>：接收一线客服升级的疑难case，给出解决方案并闭环<br><strong>② 团队赋能</strong>：完成新人实操指导、成熟员工再培训，提升团队整体能力<br><strong>③ 流程优化</strong>：总结一线客服共性问题，优化操作流程，迭代FAQ知识库<br><strong>④ 质量管控</strong>：与管理者共同推进标准政策执行</div>
+      <div class="highlight-box editable" data-key="p7_highlight"><strong>核心价值：</strong>降低一线客服处理错误率和卖家重复进线率，提高工单闭环率，形成"发现问题→优化流程→培训赋能→质量提升"的正向闭环。</div>
+    </div>
+  </div>
+
+  <div id="userProjects"></div>
+  <button class="add-btn" onclick="addProject()">➕ 添加新项目</button>
+</div>
+
+<!-- ============ 简历 ============ -->
+<div class="content-area" id="tab-resume">
+  <div class="reset-bar"><button onclick="resetAllData()">🔄 恢复全部原始</button></div>
+  <div class="card">
+    <div class="resume-header">
+      <div class="resume-name editable" data-key="resume_name">— 简历摘要 —</div>
+      <div class="resume-meta editable" data-key="resume_meta">6年互联网运营经验 | 大型活动统筹 · 跨部门协作 · SOP建设<br>美团（3.5年）+ 亚马逊（2.5年）<br>核心优势：项目管理思维、体系化沉淀能力、跨文化/跨业务线沟通</div>
+    </div>
+  </div>
+  <div class="card"><div class="resume-section"><div class="resume-section-title editable" data-key="resume_title1">核心竞争力</div>
+    <div class="body-text editable" data-key="resume_comp1" style="margin-bottom:8px"><strong>1. 大型活动端到端统筹</strong>：服贸会、招商会等国家级/公司级展会全流程执行，沉淀体系化SOP</div>
+    <div class="body-text editable" data-key="resume_comp2" style="margin-bottom:8px"><strong>2. 跨部门/跨业务线协调</strong>：协调美团10余条业务线、GA/PR/业务多岗人员，推动多方对齐</div>
+    <div class="body-text editable" data-key="resume_comp3" style="margin-bottom:8px"><strong>3. 流程建设与SOP沉淀</strong>：搭建运营工具包，将个人经验转化为部门长期工作法</div>
+    <div class="body-text editable" data-key="resume_comp4" style="margin-bottom:8px"><strong>4. 团队赋能与知识管理</strong>：亚马逊Coach经验，培训+FAQ迭代+质量管控闭环</div>
+    <div class="body-text editable" data-key="resume_comp5"><strong>5. 数据驱动运营</strong>：APP主题页投放、数据复盘、阅读率优化</div>
+  </div></div>
+  <div class="card"><div class="resume-section"><div class="resume-section-title editable" data-key="resume_title2">工作经历</div>
+    <div class="timeline-item">
+      <div class="timeline-date">2023.01 — 2025.06</div>
+      <div class="timeline-title">公共事务部 · 综合运营（外包）</div>
+      <div class="timeline-company">美团</div>
+      <div class="body-text editable" data-key="resume_exp1">• 服贸会美团展区执行总负责人（2023/2025两届），统筹10+业务线联合参展<br>• 4场供应商招商会组织执行，每场到场300+，促成合作~500家<br>• 美团APP主题页搭建投放（年货节、电影节等5+项目）<br>• 搭建部门运营工具包，沉淀SOP推动为部门长期工作法<br>• 独立管理5+核心供应商采购及年度结算<br>• 研究院内部群发号运营，内容分层推送阅读率+4%</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-date">更早 · 2.5年</div>
+      <div class="timeline-title">卖家端客服中心 · Coach</div>
+      <div class="timeline-company">亚马逊</div>
+      <div class="body-text editable" data-key="resume_exp2">• 处理一线客服升级疑难case，提供解决方案闭环<br>• 新人实操指导 + 成熟员工再培训<br>• 总结共性问题优化操作流程，迭代FAQ知识库<br>• 与管理者推进标准政策执行，降低错误率与重复进线率</div>
+    </div>
+  </div></div>
+</div>
+
+<!-- ============ 岗位JD ============ -->
+<div class="content-area" id="tab-jd">
+  <div class="reset-bar"><button onclick="resetAllData()">🔄 恢复全部原始</button></div>
+
+  <!-- JD 汇总卡片 -->
+  <div class="card jd-summary-card" id="jdSummaryCard">
+    <div class="card-title"><span class="editable" data-key="jd_summary_title">📑 岗位速览</span>
+      <button class="jd-refresh-btn" onclick="refreshJdSummary()" title="刷新列表">🔄</button>
+    </div>
+    <div id="jdSummaryList"></div>
+  </div>
+
+  <div id="jdList"></div>
+
+  <div class="card" id="jdEmpty">
+    <div class="jd-empty" style="text-align:center;padding:30px 20px;color:var(--text-light)">
+      <div style="font-size:48px;margin-bottom:12px">🎯</div>
+      <p>暂无保存的岗位JD</p>
+      <p style="font-size:11px;color:var(--text-light);background:#F8F9FB;padding:10px;border-radius:8px;text-align:left;line-height:1.6">点击右下角 <strong>+</strong> 添加意向岗位JD，系统将自动：<br>1. 提取JD核心能力要求<br>2. 与过往工作内容匹配共性<br>3. 生成针对性面试话术</p>
+    </div>
+  </div>
+
+  <!-- 右下角悬浮加号 -->
+  <button class="fab-add" onclick="openJdInput()" title="添加意向岗位">+</button>
+</div>
+
+<!-- 添加JD弹窗 -->
+<div class="edit-overlay" id="jdAddOverlay">
+  <div class="panel"><h3>🎯 添加意向岗位JD</h3>
+    <input id="jdTitleInput" placeholder="岗位名称（如：政府事务运营经理）">
+    <textarea id="jdInput" placeholder="请在此粘贴意向岗位的JD内容…&#10;&#10;例如：&#10;岗位名称：政府事务运营经理&#10;岗位职责：&#10;1. 负责…&#10;2. 负责…&#10;任职要求：&#10;1. 本科及以上学历…&#10;2. 5年以上…" style="min-height:200px"></textarea>
+    <div class="panel-actions">
+      <button class="btn-cancel" onclick="closeJdInput()">取消</button>
+      <button class="btn-save" onclick="saveJD()">保存岗位</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 面试问题 ============ -->
+<div class="content-area" id="tab-qa">
+  <div class="reset-bar">
+    <button onclick="resetAllData()">🔄 恢复全部原始</button>
+    <button onclick="addQuestion()">➕ 添加新问题</button>
+  </div>
+  <div class="toolbar qa-filter-wrap" id="qaFilter">
+    <div class="toolbar-btn active" data-filter="all">全部</div>
+    <div class="toolbar-btn" data-filter="intro">自我介绍</div>
+    <div class="toolbar-btn" data-filter="project">项目经验</div>
+    <div class="toolbar-btn" data-filter="ability">能力素养</div>
+    <div class="toolbar-btn" data-filter="career">职业发展</div>
+    <div class="toolbar-btn" data-filter="custom">自定义</div>
+  </div>
+
+  <div id="qaList"></div>
+  <button class="add-btn" onclick="addQuestion()">➕ 添加新问题</button>
+</div>
+
+<div class="bottom-nav" id="bottomNav">
+  <div class="nav-item active" data-tab="work"><span class="nav-icon">📋</span><span>工作</span></div>
+  <div class="nav-item" data-tab="resume"><span class="nav-icon">📄</span><span>简历</span></div>
+  <div class="nav-item" data-tab="jd"><span class="nav-icon">🎯</span><span>岗位</span></div>
+  <div class="nav-item" data-tab="qa"><span class="nav-icon">💬</span><span>面试</span></div>
+</div>
+</div>
+
+<!-- ===== 编辑弹窗 ===== -->
+<div class="edit-overlay" id="editOverlay">
+  <div class="panel"><h3 id="editTitle">编辑内容</h3><textarea id="editTextarea"></textarea>
+    <div class="panel-actions">
+      <button class="btn-danger" onclick="resetOneField()">恢复原始</button>
+      <button class="btn-cancel" onclick="closeEdit()">取消</button>
+      <button class="btn-save" onclick="saveEdit()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 板块管理弹窗 ===== -->
+<div class="edit-overlay" id="tabMgrOverlay">
+  <div class="panel"><h3>⚙️ 板块管理</h3>
+    <div style="font-size:12px;color:var(--text-sub);line-height:1.7;margin-bottom:12px">
+      可以调整板块顺序、重命名、新增或删除板块。<br>
+      <span style="color:var(--accent)">快捷操作：</span>直接在底部导航栏<strong>长按拖动</strong>可调整顺序，<strong>双击</strong>可修改名称。
+    </div>
+    <div id="tabMgrList"></div>
+    <button class="add-card-btn" onclick="addCustomTab()">➕ 新增板块</button>
+    <div class="panel-actions">
+      <button class="btn-save" onclick="closeTabManager()">完成</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 通用输入弹窗 ===== -->
+<div class="edit-overlay" id="promptOverlay">
+  <div class="panel"><h3 id="promptTitle">输入</h3>
+    <input id="promptInput" placeholder="">
+    <div class="panel-actions">
+      <button class="btn-cancel" onclick="closePrompt()">取消</button>
+      <button class="btn-save" onclick="confirmPrompt()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 云同步弹窗 ===== -->
+<div class="edit-overlay" id="syncOverlay">
+  <div class="panel"><h3>☁️ 数据同步（手机 ↔ Mac 内容互通）</h3>
+    <div style="font-size:12px;background:#FFF8E1;border-left:3px solid var(--primary);padding:8px 10px;border-radius:0 6px 6px 0;color:var(--text-sub);line-height:1.7;margin-bottom:12px">
+      ⚠️ <strong>这不是升级App。</strong>这里只负责搬运你填的<strong>内容</strong>（简历、JD、问答等）。<br>
+      想升级界面和功能，请点顶部的「🔄 升级App」。
+    </div>
+    <div style="font-size:12px;color:var(--text-sub);line-height:1.8;margin-bottom:10px">
+      在<strong>手机</strong>上点「上传到云端」会生成一个<strong>同步码</strong>，把它复制到 <strong>Mac</strong> 上打开本页面 → 点「☁️ 数据同步」→ 粘贴同步码 → 点「从云端下载」，两边内容就一致了。
+    </div>
+    <input id="syncCodeInput" placeholder="粘贴同步码（第一次使用可留空）">
+    <div id="syncStatus" style="font-size:12px;color:var(--text-light);margin-bottom:8px;min-height:18px"></div>
+    <div class="panel-actions">
+      <button class="btn-cancel" onclick="closeSync()">关闭</button>
+      <button class="btn-save" onclick="pullSync()" style="background:#3B82F6">⬇️ 从云端下载</button>
+      <button class="btn-save" onclick="pushSync()">⬆️ 上传到云端</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 添加问题弹窗 ===== -->
+<div class="add-overlay" id="addQOverlay">
+  <div class="panel"><h3>➕ 添加面试问题</h3>
+    <input id="addQTitle" placeholder="问题内容">
+    <select id="addQCat"><option value="intro">自我介绍类</option><option value="project">项目经验类</option><option value="ability">能力素养类</option><option value="career">职业发展类</option><option value="custom">自定义类</option></select>
+    <textarea id="addQAnswer" placeholder="参考答案（选填）"></textarea>
+    <textarea id="addQThought" placeholder="答题思路（选填）"></textarea>
+    <div class="panel-actions">
+      <button class="btn-cancel" onclick="closeAddQ()">取消</button>
+      <button class="btn-save" onclick="saveNewQuestion()">保存问题</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 添加项目弹窗 ===== -->
+<div class="add-overlay" id="addProjOverlay">
+  <div class="panel"><h3>➕ 添加新项目</h3>
+    <input id="addProjTitle" placeholder="项目名称">
+    <textarea id="addProjBg" placeholder="项目背景"></textarea>
+    <textarea id="addProjRole" placeholder="角色与职责"></textarea>
+    <textarea id="addProjProcess" placeholder="执行过程"></textarea>
+    <textarea id="addProjResult" placeholder="成果/亮点"></textarea>
+    <div class="panel-actions">
+      <button class="btn-cancel" onclick="closeAddProj()">取消</button>
+      <button class="btn-save" onclick="saveNewProject()">保存项目</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 历史记录面板 ===== -->
+<div class="history-panel" id="historyPanel">
+  <div class="history-content">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <h3 style="margin:0;font-size:15px;color:var(--secondary)">📜 修改历史记录</h3>
+      <button style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-light)" onclick="closeHistory()">✕</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <button class="toolbar-btn active" style="flex:1" onclick="filterHistory('all',this)">全部</button>
+      <button class="toolbar-btn" style="flex:1" onclick="filterHistory('edit',this)">编辑</button>
+      <button class="toolbar-btn" style="flex:1" onclick="filterHistory('add',this)">添加</button>
+      <button class="toolbar-btn" style="flex:1" onclick="filterHistory('delete',this)">删除</button>
+    </div>
+    <div class="history-list" id="historyList"><div class="history-empty">暂无修改记录</div></div>
+    <button class="btn-danger" style="margin-top:12px;width:100%" onclick="clearHistory()">🗑️ 清空历史记录</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" style="position:fixed;top:88px;left:50%;transform:translateX(-50%);background:#2C3E50;color:#FFD100;padding:11px 26px;border-radius:24px;font-size:13px;font-weight:600;z-index:400;pointer-events:none;transition:all .3s;opacity:0;max-width:90vw;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.25)"></div>
+
+<script>
+// ============ 启动时优先加载本地已升级的新版本 ============
+// 原理：升级时把新版 HTML 存进 localStorage；每次打开页面若发现本地版本更新，
+// 立即用本地新版替换当前页面 —— 这样重启/刷新都不会退回旧版。
+(function bootCheckLocalUpdate() {
+  try {
+    var localHtml = localStorage.getItem('iw_app_html');
+    var localVer = localStorage.getItem('iw_app_ver');
+    if (!localHtml || !localVer) return;
+    // 当前文件里的版本（用正则从源码取，避免依赖后面才定义的常量）
+    var m = document.documentElement.outerHTML.match(/const APP_VERSION = '([^']+)'/);
+    var curVer = m ? m[1] : '0';
+    var cmp = function(a, b) {
+      a = a.split('.').map(Number); b = b.split('.').map(Number);
+      for (var i = 0; i < Math.max(a.length, b.length); i++) {
+        if ((a[i]||0) > (b[i]||0)) return 1;
+        if ((a[i]||0) < (b[i]||0)) return -1;
+      }
+      return 0;
+    };
+    if (cmp(localVer, curVer) > 0) {
+      // 本地缓存更新 → 一边替换页面，一边阻止旧脚本继续执行
+      document.open();
+      document.write(localHtml);
+      document.close();
+      // 阻断当前旧页面脚本
+      throw new Error('__LOCAL_UPDATE_APPLIED__');
+    }
+  } catch (e) {
+    if (String(e.message).indexOf('__LOCAL_UPDATE_APPLIED__') === -1) {
+      // 其他异常忽略，正常往下跑
+    } else {
+      throw e; // 让浏览器停止执行旧脚本
+    }
+  }
+})();
+
+// ============ 全局状态 ============
+let editMode = false;
+let currentEditKey = null;
+let currentEditEl = null;
+let userQuestions = [];
+let userProjects = [];
+let userJDs = [];
+let editHistory = [];
+let historyFilter = 'all';
+
+// ============ 板块配置（可拖动排序 / 重命名 / 新增） ============
+const DEFAULT_TABS = [
+  {key:'work',   name:'工作内容', navName:'工作', icon:'📋', builtin:true},
+  {key:'resume', name:'简历',     navName:'简历', icon:'📄', builtin:true},
+  {key:'jd',     name:'岗位JD',   navName:'岗位', icon:'🎯', builtin:true},
+  {key:'qa',     name:'面试问题', navName:'面试', icon:'💬', builtin:true}
+];
+let tabConfig = [];
+
+// ============ 面试问题分类配置（可重命名） ============
+const DEFAULT_CATS = [
+  {key:'intro',   name:'自我介绍'},
+  {key:'project', name:'项目经验'},
+  {key:'ability', name:'能力素养'},
+  {key:'career',  name:'职业发展'},
+  {key:'custom',  name:'自定义'}
+];
+let catConfig = [];
+
+// ============ 版本与在线更新 ============
+const APP_VERSION = '5.4';
+const APP_TAG = 'v5.4';  // 当前发布标签，发新版时同步更新
+const REPO = 'xxuan-cell/interview-workbench';
+
+// 多源候选：按可靠性排序，逐个尝试
+function getUpdateSources() {
+  const burst = '?t=' + Date.now();
+  return [
+    // 1. GitHub raw（无 CDN 缓存，最实时）
+    'https://raw.githubusercontent.com/' + REPO + '/master/index.html' + burst,
+    // 2. jsDelivr 用 tag 引用（tag 变更后会刷新）
+    'https://cdn.jsdelivr.net/gh/' + REPO + '@' + APP_TAG + '/index.html' + burst,
+    // 3. jsDelivr master 分支（可能有缓存，最后兜底）
+    'https://cdn.jsdelivr.net/gh/' + REPO + '@master/index.html' + burst,
+    // 4. GitHub Pages
+    'https://' + REPO.split('/')[0] + '.github.io/' + REPO.split('/')[1] + '/index.html' + burst
+  ];
+}
+
+function parseVer(v) { return (v || '0').split('.').map(n => parseInt(n) || 0); }
+function isNewer(remote, local) {
+  const a = parseVer(remote), b = parseVer(local);
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    if ((a[i]||0) > (b[i]||0)) return true;
+    if ((a[i]||0) < (b[i]||0)) return false;
+  }
+  return false;
+}
+
+async function checkUpdate() {
+  const btn = document.getElementById('updateBtn');
+  btn.textContent = '⏳ 检查中...';
+  btn.disabled = true;
+
+  const sources = getUpdateSources();
+  let best = null;      // {ver, html}
+  let tried = 0;
+
+  for (const url of sources) {
+    tried++;
+    try {
+      const resp = await fetch(url, {cache: 'no-store', mode: 'cors'});
+      if (!resp.ok) continue;
+      const html = await resp.text();
+      const m = html.match(/const APP_VERSION = '([^']+)'/);
+      if (!m) continue;
+      const ver = m[1];
+      if (!best || isNewer(ver, best.ver)) best = {ver, html};
+      // 如果已拿到比当前新的，直接用，不必再试其他源
+      if (isNewer(ver, APP_VERSION)) break;
+    } catch (e) { /* 这个源失败，继续下一个 */ }
+  }
+
+  if (!best) {
+    showToast('检查失败：网络异常，请稍后重试');
+    btn.textContent = '🔄 升级App';
+    btn.disabled = false;
+    return;
+  }
+
+  if (isNewer(best.ver, APP_VERSION)) {
+    showToast('发现新版本 v' + best.ver + '，正在升级...');
+    setTimeout(() => doUpdate(best.html, best.ver), 800);
+  } else {
+    showToast('已是最新版本 v' + APP_VERSION + ' ✅');
+    btn.textContent = '🔄 升级App';
+    btn.disabled = false;
+  }
+}
+
+async function doUpdate(html, ver) {
+  // 关键：把新版 HTML 存进 localStorage，之后每次打开页面都会优先用它
+  // 这样即使艾可秀上的文件是旧版，重启/刷新也不会退回
+  try {
+    const vm = html.match(/const APP_VERSION = '([^']+)'/);
+    const newVer = ver || (vm ? vm[1] : '0');
+    localStorage.setItem('iw_app_html', html);
+    localStorage.setItem('iw_app_ver', newVer);
+  } catch (e) {
+    // localStorage 满了，降级为内存替换
+    showToast('存储空间不足，本次升级仅在当前会话生效');
+  }
+  // 用 location.replace 重新加载当前地址；
+  // 由于新版已存入 localStorage，启动钩子 bootCheckLocalUpdate 会立刻用新版渲染，
+  // 这样等价于"真正刷新到新版"，事件绑定也是全新的，不会出现按钮失灵
+  try {
+    location.replace(location.pathname + '?v=' + Date.now());
+  } catch (e) {
+    location.reload();
+  }
+}
+
+// ============ 关键词库与能力标签 ============
+const JD_KEYWORDS = {
+  '质检': ['质量管控', '质检', '客服质检', '抽检', '质检标准'],
+  '客服': ['客服', '客户服务', '客户支持', '一线客服'],
+  '培训': ['培训', '赋能', '新人培训', '岗中培训', '课件'],
+  '流程优化': ['流程优化', 'SOP', '标准流程', '流程建设', '优化流程'],
+  '数据分析': ['数据分析', '报表分析', '数据复盘', 'Excel', 'PPT'],
+  '跨部门协作': ['跨部门', '沟通协调', '协同', '内部协调'],
+  '供应商管理': ['供应商', '采购', '招标', '合同'],
+  '活动统筹': ['活动', '展会', '招商会', '统筹', '执行'],
+  '项目管理': ['项目管理', 'PM', '进度管理', '风险管理'],
+  '内容运营': ['内容运营', '公众号', '推送', '阅读率'],
+  '政府关系': ['政府', '政企', '公共事务', 'GA'],
+  '案例库': ['案例库', '案例分析', '知识库', 'FAQ'],
+  '疑难处理': ['疑难', '升级', '投诉处理', '售后'],
+  '团队管理': ['团队', '管理', '带人', '负责人'],
+  '文档沉淀': ['文档', '沉淀', '手册', 'checklist']
+};
+
+// 各项目原始标签（用于匹配）
+const PROJECT_TAGS = {
+  p1: ['活动统筹', '项目管理', '供应商管理', '跨部门协作', '政府关系'],
+  p2: ['活动统筹', '供应商管理', '政府关系', '跨部门协作'],
+  p3: ['数据分析', '跨部门协作', '内容运营'],
+  p4: ['流程优化', '跨部门协作', '文档沉淀'],
+  p5: ['供应商管理'],
+  p6: ['内容运营'],
+  p7: ['质检', '客服', '培训', '流程优化', '案例分析', '疑难处理']
+};
+
+// ============ 预设面试问题 ============
+const presetQuestions = [
+  {id:'q1',cat:'intro',title:'请做一个简单的自我介绍',
+   answer:'您好，我叫XX，有6年互联网运营经验，分别在美团和亚马逊工作过。<br><br>在美团公共事务部3.5年，我主要负责大型线下活动统筹和线上主题页运营。比较有代表性的两个项目：一是服贸会美团展区，我作为执行总负责人统筹了10余条业务线联合参展的全流程；二是组织了4场供应商招商会，每场到场300+供应商，促成约500家合作。同时我也搭建了部门运营工具包，把跨部门协作经验沉淀成SOP，推动为部门长期工作法。<br><br>在亚马逊2.5年，我担任客服中心Coach，负责疑难case升级处理和团队培训赋能，也优化了一线操作流程和FAQ知识库。<br><br>我的核心优势是项目管理思维和体系化沉淀能力，擅长把复杂的多方协作拆解成可复用的流程。这也是我对这个岗位比较感兴趣的原因。',
+   thought:'<strong>思路：</strong>自我介绍遵循"总→分→总"结构，控制在2分钟内。<br>①<strong>总</strong>：一句话说清"我是谁、几年经验、在哪干过"<br>②<strong>分</strong>：每段经历挑1-2个最有代表性的项目，用数据量化成果<br>③<strong>总</strong>：提炼核心优势标签，并自然过渡到"为什么来面这个岗位"<br><strong>避坑：</strong>不要流水账式念简历；每段经历只说亮点项目，不展开细节。'},
+  {id:'q2',cat:'project',title:'请详细介绍一个你负责过的最有挑战性的项目',
+   answer:'<strong>S（情境）：</strong>2025年服贸会，美团需要统筹10余条业务线联合参展，涉及业务、PR、GA多岗人员协同，展区面积大、参展周期长、政府关注度高。<br><br><strong>T（任务）：</strong>我作为展区执行总负责人，需要从会前Kickoff到展会结束撤场，全流程保障参展方案落地、现场执行无误、风险可控。<br><br><strong>A（行动）：</strong><br>1. 会前组织Kickoff，与10余条业务线逐一对接参展意愿、形式和分工<br>2. 组织布展供应商招标，敲定设计方案，建立每周站会跟踪进度<br>3. 统筹物料进场、人员证件申请分发、设备调试<br>4. 展会期间保障各岗人员到位、设备无故障、风险预控<br>5. 展后组织撤场，将供应商资源交付各业务线，完成合同打款<br><br><strong>R（结果）：</strong>两届服贸会顺利执行，沉淀了checklist和参会人员手册等SOP供部门后续复用。',
+   thought:'<strong>思路：</strong>用STAR法则结构化表达。<br>①<strong>S</strong>说清背景和挑战点<br>②<strong>T</strong>明确你的角色和目标<br>③<strong>A</strong>用序号列举关键行动，体现项目管理思维<br>④<strong>R</strong>量化结果+沉淀价值（SOP/方法论）<br><strong>加分项：</strong>主动说出遇到的困难和解决方式。'},
+  {id:'q3',cat:'project',title:'招商会中你遇到过什么突发问题？是如何解决的？',
+   answer:'招商会现场最大的痛点是：供应商到场后无法区分美团各业务线人员，导致沟通效率极低、后续洽谈受阻。<br><br>我从三个维度解决：<br>1. <strong>视觉识别</strong>：统一服装，设计业务线臂贴，携带工牌<br>2. <strong>线上触达</strong>：在PPT上呈现美团业务人员的企业微信二维码/群入口<br>3. <strong>流程引导</strong>：安排业务人员在入口引导供应商入场并对接<br><br>效果是供应商能快速找到对应业务人员，沟通成本显著降低。这个方案也沉淀成了后续招商会的标准配置。',
+   thought:'<strong>思路：</strong>面试官想看你的问题拆解能力和创新思维。<br>①先说<strong>痛点是什么</strong>（场景化，让面试官代入）<br>②再说<strong>怎么拆解</strong>（从视觉、线上、流程多维度）<br>③最后说<strong>效果+沉淀</strong>（不仅解决了，还变成了标准方案）'},
+  {id:'q4',cat:'ability',title:'你是如何推动跨部门协作的？举一个例子',
+   answer:'在美团做APP主题页时，我需要牵头小象、闪购、外卖、歪马、门票、酒店、必吃榜等多条业务线整合促销方案。难点是各业务线节奏不同、优先级不一。<br><br>我的做法：<br>1. <strong>统一目标</strong>：先明确活动主题和时间窗口，让各业务线对齐到同一个节点<br>2. <strong>标准化信息收集</strong>：制定统一的PPT模板和提交流程，降低对齐成本<br>3. <strong>进度透明</strong>：通过站会和文档同步各线进度，形成节奏感<br>4. <strong>结果闭环</strong>：投放后统计浏览量、成交量数据并汇报，让各业务线看到参与价值<br><br>同时我发现政府要单车卡资源时找不到人这类协作痛点，搭建了部门运营工具包——业务协作通讯录、拎包组织流程等，推动成为部门长期工作法。',
+   thought:'<strong>思路：</strong>跨部门协作的核心是"目标对齐+流程降低成本+结果闭环"。<br>①先说<strong>场景和难点</strong><br>②再说<strong>方法论</strong>（统一目标、标准化、进度透明、结果闭环）<br>③延伸到<strong>沉淀</strong>（工具包→部门工作法），体现从"解决问题"到"建机制"的升维'},
+  {id:'q5',cat:'ability',title:'你是怎么把个人经验沉淀成可复用的SOP的？',
+   answer:'我的沉淀路径是"做一遍→复盘拆解→文档化→验证迭代→推广"。<br><br>以服贸会为例：<br>1. <strong>做一遍</strong>：第一届完整执行，记录关键节点和踩坑点<br>2. <strong>复盘拆解</strong>：把全流程拆成Kickoff、布展、证件、现场保障、撤场等模块<br>3. <strong>文档化</strong>：形成checklist（逐项打勾）+参会人员手册（角色分工）<br>4. <strong>验证迭代</strong>：第二届用这套SOP执行，发现新问题再补充<br>5. <strong>推广</strong>：交给部门，成为后续展会活动的标准工作法<br><br>在亚马逊做Coach也是同样逻辑：总结一线共性问题→优化操作流程→迭代FAQ知识库→培训赋能→降低错误率，形成闭环。',
+   thought:'<strong>思路：</strong>面试官评估你是否具备"体系化思考"能力。<br>①给出<strong>方法论框架</strong>（做→复盘→文档→迭代→推广）<br>②用<strong>具体项目</strong>说明每一步怎么做的<br>③跨项目<strong>验证通用性</strong>（服贸会SOP + 亚马逊FAQ迭代）'},
+  {id:'q6',cat:'ability',title:'你在亚马逊做Coach时，如何帮助团队提升绩效？',
+   answer:'我的赋能逻辑是"发现共性问题→优化流程→培训→质量管控"闭环。<br><br>1. <strong>疑难case处理</strong>：接收一线客服升级的case，给出解决方案并闭环<br>2. <strong>共性问题提炼</strong>：从升级case中发现高频问题，分析根因<br>3. <strong>流程优化</strong>：优化一线操作流程，迭代FAQ知识库<br>4. <strong>分层培训</strong>：新人做实操指导，成熟员工做再培训（技能刷新）<br>5. <strong>标准执行</strong>：与管理者共同推进标准政策执行<br><br>结果：降低一线客服处理错误率、卖家重复进线率，提高工单闭环率。',
+   thought:'<strong>思路：</strong>体现"发现问题→建机制→培训→度量"的闭环思维。<br>①Coach不只是"教人"，而是<strong>从case中提炼规律</strong>反哺流程<br>②强调<strong>分层培训</strong>（新人和成熟员工策略不同）<br>③落到<strong>量化指标</strong>（错误率、重复进线率、闭环率）'},
+  {id:'q7',cat:'ability',title:'你如何管理供应商？从招标到结算的全流程是怎样的？',
+   answer:'我独立对接5+核心供应商，全流程管理：<br><br>1. <strong>招标阶段</strong>：写Brief明确需求，组织供应商比选，评估方案和报价<br>2. <strong>执行阶段</strong>：设计方案敲定、搭建监督、质量验收<br>3. <strong>合同阶段</strong>：完成合同签订，跟进打款流程<br>4. <strong>结算阶段</strong>：年度结算对账，确保账期清晰<br>5. <strong>关系维护</strong>：展会后将供应商名片等资源交付各业务线，建立长期合作池',
+   thought:'<strong>思路：</strong>供应商管理体现"商务+合规"双视角。<br>①按<strong>全生命周期</strong>讲（招标→执行→合同→结算→维护）<br>②强调<strong>独立</strong>（5+供应商）<br>③延伸<strong>资源沉淀</strong>，体现不止管采购还管关系资产'},
+  {id:'q8',cat:'career',title:'你为什么从美团离开？为什么选择我们这个岗位？',
+   answer:'离开美团的原因是外包身份的限制，晋升通道和长期发展空间有限，但我非常感谢在美团积累的大型活动统筹和体系化运营能力。<br><br>选择贵司这个岗位，是因为：<br>1. <strong>能力匹配</strong>：6年运营经验，大型活动端到端统筹、跨部门协作、SOP建设都是我的核心能力<br>2. <strong>方向一致</strong>：我希望继续在公共事务/政企合作/运营统筹方向深耕<br>3. <strong>平台价值</strong>：贵司在XX领域的布局和我过往的政府关系/业务对接经验能形成互补<br>（注：第3点需结合具体JD补充）',
+   thought:'<strong>思路：</strong>动机题最忌讳说前公司坏话。<br>①离职原因<strong>客观中性</strong>（外包身份限制）<br>②感谢前公司<strong>成长收获</strong>（格局）<br>③选贵司的3个理由：<strong>能力匹配+方向一致+平台互补</strong>'},
+  {id:'q9',cat:'career',title:'你的职业规划是什么？未来3年想成为什么样的人？',
+   answer:'我用3年节奏来规划：<br><br><strong>第1年（融入期）</strong>：快速熟悉业务和团队，把过往的活动统筹和SOP建设能力迁移过来，找到在团队中的价值切入点<br><br><strong>第2年（深耕期）</strong>：独立负责核心项目，从执行者向项目负责人升级，建立自己的方法论体系<br><br><strong>第3年（影响力期）</strong>：沉淀的项目经验反哺团队，带1-2个新人，从"做好项目"到"建团队机制"，形成个人在行业中的差异化标签<br><br>我的核心方向是公共事务运营/政企合作领域，希望成为这个方向的专家型人才。',
+   thought:'<strong>思路：</strong>规划要"有时间锚点+有成长曲线+有方向"。<br>①用<strong>1/2/3年</strong>分层，不要说空话<br>②体现<strong>角色升级</strong>（执行→负责→带人）<br>③明确<strong>方向标签</strong>（公共事务运营专家）'},
+  {id:'q10',cat:'project',title:'APP主题页运营的数据效果如何？你是如何评估的？',
+   answer:'每次主题页上线后，我会统计两个维度的数据：<br><br>1. <strong>流量侧</strong>：页面浏览量（PV/UV）、各资源位（搜索位、猜喜位、开屏图）的点击和转化<br>2. <strong>成交侧</strong>：活动期间的成交量、各业务线贡献占比<br><br>代表案例包括北京国际电影节品美食、全国网上年货节、北京直播电商购物节、北京大运河博物馆看见殷商、北京美食地图等。每次活动结束后做数据汇报，复盘各业务线表现并指导下一次活动方案优化。',
+   thought:'<strong>思路：</strong>数据题要体现"指标体系+复盘意识"。<br>①给出<strong>指标分层</strong>（流量侧+成交侧）<br>②强调<strong>复盘驱动优化</strong>，数据不是终点而是下一次的起点<br>③列举<strong>案例</strong>证明连续性'},
+  {id:'q11',cat:'ability',title:'你觉得自己最大的优点和需要提升的地方是什么？',
+   answer:'<strong>优点</strong>：体系化沉淀能力。我不只是把事情做完，还会复盘拆解成SOP。比如服贸会的checklist、亚马逊的FAQ迭代、部门运营工具包，都是我把个人经验转化为团队资产的体现。<br><br><strong>需要提升</strong>：目前我在业务策略层面的参与度还不够深。过往更多是从执行和统筹角度做"把事情做对"，未来希望能更多参与"做对的事情"——即业务方向判断和策略设计。这也是我选择这个岗位的原因之一，希望能在这个方向上成长。',
+   thought:'<strong>思路：</strong>优点用"案例+标签"支撑，缺点要"真诚但不致命"。<br>①优点：体系化沉淀（有3个案例佐证）<br>②缺点：说一个<strong>真实的成长空间</strong>，且和目标岗位能衔接<br>③把缺点转化为<strong>"为什么来"的动机</strong>'},
+  {id:'q12',cat:'project',title:'如果让你重新来过，你会怎么优化服贸会这个项目？',
+   answer:'复盘后我觉得有三个优化方向：<br><br>1. <strong>数字化管理</strong>：当时部分进度跟踪还是靠文档和站会，如果引入项目管理工具（如飞书多维表格），可以让10余条业务线的进度更实时透明<br>2. <strong>风险预案前置</strong>：第一届有些突发情况是临时处理，第二届虽然补了SOP，但如果能在会前做更系统性的风险地图（人员、设备、政府关系），响应会更从容<br>3. <strong>效果度量</strong>：当时对展会效果的评估偏定性，如果能建立一套"展区流量→业务线索→后续转化"的度量链路，更能体现公共事务对业务的价值',
+   thought:'<strong>思路：</strong>复盘题考察"反思深度"和"成长性"。<br>①不要说"没什么可优化的"<br>②从<strong>工具/流程/度量</strong>三个维度说，体现系统性<br>③优化的点要<strong>可落地</strong>'}
+];
+
+// ============ 历史记录 ============
+function addHistory(action, detail) {
+  const now = new Date();
+  const ts = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+' '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0');
+  editHistory.unshift({time:ts, action, detail, id:Date.now()});
+  if (editHistory.length > 200) editHistory.length = 200;
+  saveToStorage('history', editHistory);
+}
+function showHistory() { document.getElementById('historyPanel').classList.add('show'); renderHistory(); }
+
+// 版本信息面板
+function showVersionInfo() {
+  const cached = localStorage.getItem('iw_app_ver');
+  const hasCache = !!localStorage.getItem('iw_app_html');
+  const info = '📱 当前运行版本：v' + APP_VERSION + '\n' +
+    '💾 本地已缓存版本：' + (hasCache ? ('v' + cached) : '无（使用艾可秀上的文件）') + '\n\n' +
+    '「本地缓存版本」是升级后存在手机上的新版，打开 app 时优先加载它，所以重启不会退回旧版。';
+  if (confirm(info + '\n\n是否清除本地缓存版本？（仅用于升级出问题时回退，会丢失已升级的功能）')) {
+    localStorage.removeItem('iw_app_html');
+    localStorage.removeItem('iw_app_ver');
+    showToast('已清除本地缓存版本，即将重新加载');
+    setTimeout(() => location.replace(location.pathname + '?r=' + Date.now()), 900);
+  }
+}
+function closeHistory() { document.getElementById('historyPanel').classList.remove('show'); }
+function filterHistory(type, btn) {
+  historyFilter = type;
+  document.querySelectorAll('#historyPanel .toolbar-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderHistory();
+}
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  const filtered = historyFilter === 'all' ? editHistory : editHistory.filter(h => h.action.includes(historyFilter));
+  if (filtered.length === 0) { list.innerHTML = '<div class="history-empty">暂无记录</div>'; return; }
+  list.innerHTML = filtered.map(h => '<div class="history-item"><div class="hi-time">'+h.time+'</div><span class="hi-action">'+h.action+'</span><div class="hi-detail">'+h.detail+'</div></div>').join('');
+}
+function clearHistory() {
+  if (confirm('确定清空所有历史记录吗？')) {
+    editHistory = []; saveToStorage('history', []); renderHistory(); showToast('历史已清空');
+  }
+}
+
+// ============ 存储 ============
+function saveToStorage(key, val) { try { localStorage.setItem('iw_'+key, JSON.stringify(val)); } catch(e) {} }
+function loadFromStorage(key, def) { try { const v = localStorage.getItem('iw_'+key); return v ? JSON.parse(v) : def; } catch(e) { return def; } }
+
+// ============ 编辑模式（按 Tab 独立控制） ============
+let tabEditStates = {};  // {work:false, resume:false, ...}
+
+function toggleTabEdit(tabKey) {
+  // 关闭其他所有 tab 的编辑状态，开启当前 tab
+  const willOn = !tabEditStates[tabKey];
+  tabConfig.forEach(t => { tabEditStates[t.key] = false; });
+  tabEditStates[tabKey] = willOn;
+  editMode = willOn;  // 供 editable 点击判断用（只对当前 tab 生效）
+  applyTabEditUI();
+  // 自定义板块需重渲染按钮状态
+  const t = tabConfig.find(x => x.key === tabKey);
+  if (t && !t.builtin) {
+    const area = document.getElementById('tab-' + tabKey);
+    if (area) renderCustomTabContent(area, tabKey);
+  }
+  if (willOn) showToast('已开启「'+(t?t.name:tabKey)+'」编辑');
+}
+
+function applyTabEditUI() {
+  // 已移除「编辑本栏」按钮，编辑完全由卡片级按钮控制，这里只需保持全局 editMode 为 false
+  editMode = false;
+  document.body.classList.remove('edit-mode');
+}
+
+function toggleEditMode() { /* 已改为卡片级编辑，保留空函数兼容 */ }
+
+// ============ 卡片级编辑 ============
+function injectCardEditBtns() {
+  // 通用卡片
+  document.querySelectorAll('.card').forEach(card => {
+    if (card.querySelector(':scope > .card-edit-btn')) return;
+    if (!card.querySelector('.editable')) return;  // 无内容可编辑则不加
+    const btn = document.createElement('button');
+    btn.className = 'card-edit-btn';
+    btn.type = 'button';
+    btn.onclick = function(ev) {
+      ev.stopPropagation();
+      card.classList.toggle('card-editing');
+      const on = card.classList.contains('card-editing');
+      btn.classList.toggle('on', on);
+      if (on) showToast('已开启本卡片编辑，点文字即可修改');
+    };
+    card.appendChild(btn);
+  });
+  // 面试问题卡片（.q-card 结构，编辑按钮放标题区右上角）
+  document.querySelectorAll('.q-card').forEach(card => {
+    const header = card.querySelector(':scope > .q-header');
+    if (!header) return;
+    if (header.querySelector('.q-card-edit-btn')) return;
+    if (!card.querySelector('.editable')) return;
+    const btn = document.createElement('button');
+    btn.className = 'card-edit-btn q-card-edit-btn';
+    btn.type = 'button';
+    btn.onclick = function(ev) {
+      ev.stopPropagation();
+      card.classList.toggle('card-editing');
+      const on = card.classList.contains('card-editing');
+      btn.classList.toggle('on', on);
+      if (on) { card.classList.add('open'); showToast('已开启本问题编辑'); }
+    };
+    card.appendChild(btn);
+  });
+  // 折叠面板（项目卡片）：需求4 - 展开条移到底部，编辑按钮放右上角
+  document.querySelectorAll('.collapsible').forEach(card => {
+    if (card.querySelector(':scope > .collapsible-header .card-edit-btn')) return;
+    if (!card.querySelector('.editable')) return;
+    const header = card.querySelector(':scope > .collapsible-header');
+    if (!header) return;
+    // 1) 编辑按钮：放卡片右上角（absolute），不再挤在标题旁
+    const btn = document.createElement('button');
+    btn.className = 'card-edit-btn collapsible-edit-btn';
+    btn.type = 'button';
+    btn.onclick = function(ev) {
+      ev.stopPropagation();
+      card.classList.toggle('editing');
+      const on = card.classList.contains('editing');
+      btn.classList.toggle('on', on);
+      if (on) card.classList.add('open');
+    };
+    card.appendChild(btn);
+    // 2) 移除 header 上的点击展开与旧箭头，改由底部展开条控制
+    header.onclick = null;
+    header.style.cursor = 'default';
+    const oldArrow = header.querySelector('.arrow');
+    if (oldArrow) oldArrow.style.display = 'none';
+    // 3) 底部展开条（确保是最后一个子元素）
+    if (!card.querySelector(':scope > .card-expand-bar')) {
+      const bar = document.createElement('div');
+      bar.className = 'card-expand-bar';
+      bar.innerHTML = '<span class="ceb-text">' + (card.classList.contains('open') ? '点击收起' : '点击展开') + '</span><span class="ceb-arrow">▼</span>';
+      bar.onclick = function(ev) {
+        ev.stopPropagation();
+        toggleCardExpand(bar);
+      };
+      card.appendChild(bar);
+    }
+    // 编辑按钮放在展开条之前，保证展开条始终在最底部
+    const barEl = card.querySelector(':scope > .card-expand-bar');
+    if (barEl && barEl.previousElementSibling !== btn) {
+      card.insertBefore(btn, barEl);
+    }
+  });
+}
+
+// ============ 工作台名称自定义 ============
+function editWsName() {
+  if (!editMode) { openPrompt('修改工作台名称', document.getElementById('wsName').textContent, saveWsName); return; }
+  openPrompt('修改工作台名称', document.getElementById('wsName').textContent, saveWsName);
+}
+function saveWsName(val) {
+  if (!val) return;
+  document.getElementById('wsName').textContent = val;
+  saveToStorage('ws_name', val);
+  addHistory('修改名称', '工作台改名为「'+val+'」');
+  showToast('名称已更新 ✅');
+}
+function editWsSub() {
+  openPrompt('修改副标题', document.getElementById('wsSub').textContent, function(val) {
+    if (!val) return;
+    document.getElementById('wsSub').textContent = val;
+    saveToStorage('ws_sub', val);
+    showToast('副标题已更新 ✅');
+  });
+}
+
+// ============ 编辑弹窗（支持卡片级/板块级） ============
+document.addEventListener('click', function(e) {
+  const el = e.target.closest('.editable');
+  if (!el) return;
+  // 允许编辑的条件：全局编辑模式 或 所在卡片处于卡片编辑态
+  const inEditingCard = el.closest('.card-editing, .collapsible.editing');
+  if (!editMode && !inEditingCard) return;
+  const key = el.dataset.key;
+  if (!key) return;
+  currentEditKey = key; currentEditEl = el;
+  const saved = localStorage.getItem('iw_'+key);
+  document.getElementById('editTextarea').value = saved !== null ? saved : (el.getAttribute('data-original') || el.innerHTML).replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '');
+  document.getElementById('editTitle').textContent = '编辑：' + (el.textContent || '').substring(0, 30) + '...';
+  document.getElementById('editOverlay').classList.add('show');
+  setTimeout(() => document.getElementById('editTextarea').focus(), 200);
+});
+document.getElementById('editOverlay').addEventListener('click', function(e) { if (e.target === this) closeEdit(); });
+function closeEdit() { document.getElementById('editOverlay').classList.remove('show'); currentEditKey = null; currentEditEl = null; }
+function saveEdit() {
+  if (!currentEditKey || !currentEditEl) return;
+  const val = document.getElementById('editTextarea').value;
+  localStorage.setItem('iw_'+currentEditKey, val);
+  currentEditEl.innerHTML = val.replace(/\n/g, '<br>');
+  addHistory('编辑', '修改了「'+(currentEditEl.textContent||'').substring(0,30)+'」');
+  closeEdit(); showToast('已保存 ✅');
+}
+function resetOneField() {
+  if (!currentEditKey || !currentEditEl) return;
+  localStorage.removeItem('iw_'+currentEditKey);
+  const orig = currentEditEl.getAttribute('data-original') || '';
+  document.getElementById('editTextarea').value = orig.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '');
+  currentEditEl.innerHTML = orig;
+  addHistory('恢复', '恢复了「'+(currentEditEl.textContent||'').substring(0,30)+'」');
+  closeEdit(); showToast('已恢复 ✅');
+}
+function resetAllData() {
+  if (confirm('确定恢复全部原始内容吗？你修改过的文字、添加的问题/项目/JD都会被清空。')) {
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith('iw_')) keys.push(k); }
+    keys.forEach(k => localStorage.removeItem(k));
+    userQuestions = []; userProjects = []; userJDs = []; editHistory = [];
+    location.reload();
+  }
+}
+
+// ============ 原始内容 ============
+function initEditable() {
+  document.querySelectorAll('.editable').forEach(el => {
+    const key = el.dataset.key;
+    if (!key) return;
+    if (!el.getAttribute('data-original')) el.setAttribute('data-original', el.innerHTML);
+    const saved = localStorage.getItem('iw_'+key);
+    if (saved !== null) el.innerHTML = saved.replace(/\n/g, '<br>');
+  });
+  if (typeof injectCardEditBtns === 'function') injectCardEditBtns();
+}
+
+// ============ Tab ============
+function switchTab(name) {
+  document.querySelectorAll('.content-area').forEach(c => c.classList.toggle('active', c.id === 'tab-' + name));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.tab === name));
+  window.scrollTo(0, 0);
+}
+
+// ============ 板块动态渲染 ============
+function saveTabs() { saveToStorage('tabs', tabConfig); }
+function loadTabConfig() {
+  const saved = loadFromStorage('tabs', null);
+  if (saved && Array.isArray(saved) && saved.length) {
+    // 合并：确保内置板块都在
+    tabConfig = saved;
+    DEFAULT_TABS.forEach(d => {
+      if (!tabConfig.some(t => t.key === d.key)) tabConfig.push({...d});
+    });
+  } else {
+    tabConfig = DEFAULT_TABS.map(t => ({...t}));
+  }
+}
+function loadCatConfig() {
+  const saved = loadFromStorage('cats', null);
+  if (saved && Array.isArray(saved) && saved.length) {
+    catConfig = saved;
+    DEFAULT_CATS.forEach(d => { if (!catConfig.some(c => c.key === d.key)) catConfig.push({...d}); });
+  } else {
+    catConfig = DEFAULT_CATS.map(c => ({...c}));
+  }
+}
+
+const NAV_ICONS = {work:'📋', resume:'📄', jd:'🎯', qa:'💬'};
+
+// 渲染底部导航（唯一入口）：支持长按拖动排序、双击改名称
+function renderTabs() {
+  renderBottomNav();
+  renderTabContents();
+}
+
+function renderBottomNav() {
+  const nav = document.getElementById('bottomNav');
+  if (!nav) return;
+  const activeKey = document.querySelector('.content-area.active')?.id.replace('tab-','') || tabConfig[0].key;
+  nav.innerHTML = tabConfig.map(t => {
+    const icon = NAV_ICONS[t.key] || t.icon || '📌';
+    const name = t.navName || (t.name.length > 5 ? t.name.substring(0,5) : t.name);
+    return '<div class="nav-item'+(t.key===activeKey?' active':'')+'" data-tab="'+t.key+'">'+
+             '<span class="nav-icon">'+icon+'</span><span class="nav-label">'+name+'</span>'+
+           '</div>';
+  }).join('');
+
+  nav.querySelectorAll('.nav-item').forEach(item => {
+    const key = item.dataset.tab;
+    // 单击切换
+    item.addEventListener('click', () => { if (!dragMoved && !navDblFlag) switchTab(key); });
+    // 双击改名
+    item.addEventListener('dblclick', (e) => { e.preventDefault(); renameNavItem(key); });
+    // 长按拖动排序
+    attachNavTouchDrag(item, key);
+    // 桌面端 HTML5 拖拽
+    item.draggable = true;
+    item.addEventListener('dragstart', e => { dragSrcKey = key; dragMoved = false; item.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
+    item.addEventListener('dragend', () => { item.classList.remove('dragging'); nav.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('drag-over')); setTimeout(()=>dragMoved=false,120); });
+    item.addEventListener('dragover', e => { e.preventDefault(); item.classList.add('drag-over'); });
+    item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+    item.addEventListener('drop', e => {
+      e.preventDefault(); item.classList.remove('drag-over');
+      reorderTabs(dragSrcKey, key); dragMoved = true;
+    });
+  });
+}
+
+let navDblFlag = false;
+function reorderTabs(fromKey, toKey) {
+  if (!fromKey || !toKey || fromKey === toKey) return;
+  const fi = tabConfig.findIndex(x => x.key === fromKey);
+  const ti = tabConfig.findIndex(x => x.key === toKey);
+  if (fi < 0 || ti < 0) return;
+  const [moved] = tabConfig.splice(fi, 1);
+  tabConfig.splice(ti, 0, moved);
+  saveTabs(); renderBottomNav();
+  showToast('板块顺序已调整');
+}
+
+// 底部导航长按拖动（移动端）
+let dragSrcKey = null, dragMoved = false;
+function attachNavTouchDrag(el, key) {
+  let timer = null, startX = 0, startY = 0, dragging = false, lp = null;
+  el.addEventListener('touchstart', e => {
+    const t = e.touches[0]; startX = t.clientX; startY = t.clientY;
+    timer = setTimeout(() => {
+      dragging = true; dragSrcKey = key; el.classList.add('dragging');
+      if (navigator.vibrate) navigator.vibrate(35);
+      showToast('拖动到目标位置松开即可', 1500);
+    }, 550);
+  }, {passive:true});
+  el.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    if (!dragging) {
+      if (Math.abs(t.clientX-startX)>10 || Math.abs(t.clientY-startY)>10) clearTimeout(timer);
+      return;
+    }
+    e.preventDefault();
+    const target = document.elementFromPoint(t.clientX, t.clientY)?.closest('.nav-item');
+    document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('drag-over'));
+    if (target && target !== el) target.classList.add('drag-over');
+  }, {passive:false});
+  el.addEventListener('touchend', e => {
+    clearTimeout(timer);
+    if (!dragging) return;
+    dragging = false; el.classList.remove('dragging');
+    const t = e.changedTouches[0];
+    const target = document.elementFromPoint(t.clientX, t.clientY)?.closest('.nav-item');
+    document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('drag-over'));
+    if (target && target !== el) {
+      reorderTabs(dragSrcKey, target.dataset.tab);
+      dragMoved = true;
+      setTimeout(()=>dragMoved=false, 200);
+    }
+    dragSrcKey = null;
+  });
+}
+
+// 双击底部导航改名
+function renameNavItem(key) {
+  const t = tabConfig.find(x => x.key === key);
+  if (!t) return;
+  openPrompt('修改板块名称', t.navName || t.name, function(val) {
+    if (!val) return;
+    t.name = val;
+    t.navName = val;
+    saveTabs(); renderBottomNav();
+    addHistory('重命名板块', '板块改名为「'+val+'」');
+    showToast('板块名称已更新 ✅');
+  });
+}
+
+// 渲染各板块内容区（含自定义板块的卡片）
+function renderTabContents() {
+  const main = document.querySelector('.app-container');
+  // 移除已删除的自定义板块内容区
+  document.querySelectorAll('.content-area[data-custom="1"]').forEach(c => {
+    const key = c.id.replace('tab-', '');
+    if (!tabConfig.some(t => t.key === key)) c.remove();
+  });
+  // 为自定义板块创建/渲染内容区
+  tabConfig.filter(t => !t.builtin).forEach(t => {
+    let area = document.getElementById('tab-' + t.key);
+    if (!area) {
+      area = document.createElement('div');
+      area.className = 'content-area';
+      area.id = 'tab-' + t.key;
+      area.dataset.custom = '1';
+      const nav = document.getElementById('bottomNav');
+      nav.parentNode.insertBefore(area, nav);
+    }
+    renderCustomTabContent(area, t.key);
+  });
+}
+function renderCustomTabContent(area, key) {
+  const cards = loadFromStorage('card_' + key, []);
+  area.innerHTML = cards.map((c, i) => '<div class="custom-card"><span class="cc-del" onclick="delCustomCard(\''+key+'\','+i+')">删除</span><div class="cc-text editable" data-key="card_'+key+'_'+i+'">'+(c||'')+'</div></div>').join('') +
+    '<button class="add-card-btn" onclick="addCustomCard(\''+key+'\')">➕ 添加卡片</button>';
+  initEditable();
+}
+function addCustomCard(key) {
+  const cards = loadFromStorage('card_' + key, []);
+  cards.push('');
+  saveToStorage('card_' + key, cards);
+  renderCustomTabContent(document.getElementById('tab-' + key), key);
+  showToast('已添加卡片，点击即可输入');
+}
+function delCustomCard(key, idx) {
+  const cards = loadFromStorage('card_' + key, []);
+  cards.splice(idx, 1);
+  saveToStorage('card_' + key, cards);
+  renderCustomTabContent(document.getElementById('tab-' + key), key);
+  showToast('已删除卡片');
+}
+
+// ============ 板块管理面板 ============
+function openTabManager() {
+  document.getElementById('tabMgrOverlay').classList.add('show');
+  renderTabMgrList();
+}
+function closeTabManager() { document.getElementById('tabMgrOverlay').classList.remove('show'); renderTabs(); }
+function renderTabMgrList() {
+  const list = document.getElementById('tabMgrList');
+  list.innerHTML = tabConfig.map((t, i) =>
+    '<div class="tab-mgr-row">' +
+      '<span style="font-size:12px;color:var(--text-light);width:16px">'+(i+1)+'</span>' +
+      '<span class="tm-name">'+t.name+'</span>' +
+      '<button class="tm-btn" onclick="moveTabItem('+i+',-1)" '+(i===0?'disabled':'')+'>↑</button>' +
+      '<button class="tm-btn" onclick="moveTabItem('+i+',1)" '+(i===tabConfig.length-1?'disabled':'')+'>↓</button>' +
+      '<button class="tm-btn" onclick="renameTabItem('+i+')">✎</button>' +
+      (t.builtin ? '' : '<button class="tm-btn tm-del" onclick="deleteTabItem('+i+')">✕</button>') +
+    '</div>'
+  ).join('');
+}
+function moveTabItem(idx, dir) {
+  const ni = idx + dir;
+  if (ni < 0 || ni >= tabConfig.length) return;
+  const [m] = tabConfig.splice(idx, 1);
+  tabConfig.splice(ni, 0, m);
+  saveTabs(); renderTabMgrList(); renderTabs();
+}
+function renameTabItem(idx) {
+  const t = tabConfig[idx];
+  openPrompt('重命名板块', t.name, function(val) {
+    if (!val) return;
+    t.name = val;
+    // 同步更新底部导航名（内置板块）
+    if (t.builtin && val.length <= 4) t.navName = val;
+    saveTabs(); renderTabMgrList(); renderTabs();
+    showToast('板块已重命名 ✅');
+  });
+}
+function deleteTabItem(idx) {
+  const t = tabConfig[idx];
+  if (t.builtin) { showToast('内置板块不可删除'); return; }
+  if (!confirm('确定删除板块「'+t.name+'」及其全部内容吗？')) return;
+  localStorage.removeItem('iw_card_' + t.key);
+  tabConfig.splice(idx, 1);
+  saveTabs(); renderTabMgrList(); renderTabs();
+  showToast('板块已删除');
+}
+function addCustomTab() {
+  openPrompt('新增板块名称', '', function(val) {
+    if (!val) return;
+    const key = 'c' + Date.now();
+    tabConfig.push({key, name: val, icon:'📌', builtin:false});
+    saveTabs();
+    saveToStorage('card_' + key, ['']);
+    renderTabMgrList(); renderTabs();
+    addHistory('新增板块', '新增了板块「'+val+'」');
+    showToast('板块已添加 ✅');
+  });
+}
+
+// ============ 通用输入弹窗 ============
+let promptCallback = null;
+function openPrompt(title, defaultValue, cb) {
+  promptCallback = cb;
+  document.getElementById('promptTitle').textContent = title;
+  const inp = document.getElementById('promptInput');
+  inp.value = defaultValue || '';
+  document.getElementById('promptOverlay').classList.add('show');
+  setTimeout(() => { inp.focus(); inp.select(); }, 200);
+}
+function closePrompt() { document.getElementById('promptOverlay').classList.remove('show'); promptCallback = null; }
+function confirmPrompt() {
+  const val = document.getElementById('promptInput').value.trim();
+  const cb = promptCallback;
+  closePrompt();
+  if (cb) cb(val);
+}
+
+// ============ 折叠 ============
+function toggleCollapse(h) { h.parentElement.classList.toggle('open'); }
+
+// ============ Toast ============
+function showToast(msg, duration) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.opacity = '1';
+  clearTimeout(t._timeout);
+  t._timeout = setTimeout(() => t.style.opacity = '0', duration || 2800);
+}
+
+// ============ 面试问题 ============
+function renderAllQuestions() {
+  const all = [...presetQuestions, ...userQuestions.map((q,i) => ({...q, id:'uq_'+i, userAdded:true}))];
+  const container = document.getElementById('qaList');
+  // 按分类分组，生成每个分类前的汇总卡片
+  const groups = {};
+  all.forEach((q, idx) => {
+    (groups[q.cat] = groups[q.cat] || []).push({q, idx});
+  });
+  // 按 catConfig 顺序输出各分类的汇总卡片 + 问题卡片
+  let html = '';
+  const orderedCats = catConfig.map(c => c.key).filter(k => groups[k]);
+  // 未在 catConfig 里的分类补在后面
+  Object.keys(groups).forEach(k => { if (!orderedCats.includes(k)) orderedCats.push(k); });
+  orderedCats.forEach(catKey => {
+    const items = groups[catKey];
+    // 分类汇总卡片
+    html += '<div class="qa-group-card" data-groupcat="'+catKey+'">'+
+      '<div class="qa-group-head"><span class="qg-name">'+catLabel(catKey)+'</span><span class="qg-count">'+items.length+' 题</span><span class="qg-toggle" onclick="toggleGroupList(this)">展开 ▾</span></div>'+
+      '<div class="qa-group-list">'+items.map(it => '<div class="qg-item" onclick="jumpToQuestion(\''+it.q.id+'\')"><span class="qg-idx">'+(it.idx+1)+'</span><span class="qg-txt">'+it.q.title.replace(/<[^>]+>/g,'').substring(0,40)+'</span></div>').join('')+'</div>'+
+      '</div>';
+    // 该分类下的问题卡片
+    items.forEach(({q, idx}) => {
+      html += '<div class="q-card'+(q.userAdded?' user-added':'')+'" id="qcard-'+q.id+'" data-cat="'+q.cat+'" data-qid="'+q.id+'">'+
+        // 需求2：点击标题区展开/收起（与工作内容项目卡片一致的效果）
+        '<div class="q-header" onclick="toggleQCardOpen(this)"><div class="q-num">'+(idx+1)+'</div><div style="flex:1"><div class="q-title editable" data-key="'+q.id+'_title">'+q.title+'</div><div class="q-tags"><span class="tag tag-blue">'+catLabel(q.cat)+'</span>'+(q.userAdded?'<span class="tag tag-green">自定义</span>':'')+'</div></div><span class="q-arrow">▶</span></div>'+
+        '<div class="q-body"><div class="q-section-label">参考答案</div><div class="q-answer editable" data-key="'+q.id+'_answer">'+(q.answer||'（待补充）')+'</div><div class="q-section-label">答题思路</div><div class="q-thought editable" data-key="'+q.id+'_thought">'+(q.thought||'（待补充）')+'</div>'+(q.userAdded?'<div style="margin-top:10px"><button class="q-del-btn" onclick="event.stopPropagation();deleteQuestion(\''+q.id+'\')">🗑️ 删除此问题</button></div>':'')+'</div>'+
+      '</div>';
+    });
+  });
+  container.innerHTML = html;
+  initEditable(); applyQFilter();
+}
+
+// 问题卡片展开/收起（点击标题区，效果同工作内容项目卡片）
+function toggleQCardOpen(header) {
+  const card = header.parentElement;
+  card.classList.toggle('open');
+}
+function toggleQCard(header) { toggleQCardOpen(header); }
+// 分类汇总列表展开/收起
+function toggleGroupList(el) {
+  const card = el.closest('.qa-group-card');
+  card.classList.toggle('open');
+  el.textContent = card.classList.contains('open') ? '收起 ▴' : '展开 ▾';
+}
+// 从分类汇总跳转到具体问题
+function jumpToQuestion(qid) {
+  const card = document.getElementById('qcard-' + qid);
+  if (!card) return;
+  // 确保该问题可见（可能被筛选隐藏）
+  const active = document.querySelector('#qaFilter .toolbar-btn.active');
+  const f = active ? active.dataset.filter : 'all';
+  if (f !== 'all' && card.dataset.cat !== f) {
+    document.querySelectorAll('#qaFilter .toolbar-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === 'all'));
+    applyQFilter();
+  }
+  card.classList.add('open');
+  card.scrollIntoView({behavior:'smooth', block:'start'});
+  card.style.transition = 'box-shadow .3s';
+  card.style.boxShadow = '0 0 0 2px var(--accent)';
+  setTimeout(() => { card.style.boxShadow = ''; }, 1500);
+}
+function catLabel(cat) {
+  const c = catConfig.find(x => x.key === cat);
+  if (c) return c.name;
+  const m = {intro:'自我介绍',project:'项目经验',ability:'能力素养',career:'职业发展',custom:'自定义'};
+  return m[cat] || cat;
+}
+// 渲染面试问题分类筛选按钮
+function renderQaFilter() {
+  const bar = document.getElementById('qaFilter');
+  const activeBtn = bar.querySelector('.toolbar-btn.active');
+  const activeFilter = activeBtn ? activeBtn.dataset.filter : 'all';
+  let html = '<div class="toolbar-btn'+(activeFilter==='all'?' active':'')+'" data-filter="all">全部</div>';
+  html += catConfig.map(c => '<div class="toolbar-btn'+(activeFilter===c.key?' active':'')+'" data-filter="'+c.key+'" data-catkey="'+c.key+'">'+c.name+'</div>').join('');
+  bar.innerHTML = html;
+  bar.querySelectorAll('.toolbar-btn').forEach(b => b.addEventListener('click', function() {
+    // 编辑模式下点非「全部」的按钮 -> 重命名
+    if (editMode && this.dataset.catkey) { renameCat(this.dataset.catkey); return; }
+    bar.querySelectorAll('.toolbar-btn').forEach(x => x.classList.remove('active'));
+    this.classList.add('active');
+    applyQFilter();
+  }));
+}
+function renameCat(catKey) {
+  const c = catConfig.find(x => x.key === catKey);
+  if (!c) return;
+  openPrompt('重命名分类', c.name, function(val) {
+    if (!val) return;
+    c.name = val;
+    saveToStorage('cats', catConfig);
+    renderQaFilter(); renderAllQuestions(); renderAddQCatSelect();
+    addHistory('重命名分类', '分类改名为「'+val+'」');
+    showToast('分类已重命名 ✅');
+  });
+}
+function renderAddQCatSelect() {
+  const sel = document.getElementById('addQCat');
+  if (!sel) return;
+  sel.innerHTML = catConfig.map(c => '<option value="'+c.key+'">'+c.name+'</option>').join('');
+}
+function applyQFilter() {
+  const active = document.querySelector('#qaFilter .toolbar-btn.active');
+  const f = active ? active.dataset.filter : 'all';
+  document.querySelectorAll('#qaList .q-card').forEach(c => { c.style.display = (f === 'all' || c.dataset.cat === f) ? '' : 'none'; });
+  document.querySelectorAll('#qaList .qa-group-card').forEach(c => { c.style.display = (f === 'all' || c.dataset.groupcat === f) ? '' : 'none'; });
+}
+function addQuestion() { document.getElementById('addQOverlay').classList.add('show'); document.getElementById('addQTitle').value=''; document.getElementById('addQAnswer').value=''; document.getElementById('addQThought').value=''; document.getElementById('addQCat').value='project'; }
+function closeAddQ() { document.getElementById('addQOverlay').classList.remove('show'); }
+let savingQuestion = false;
+function saveNewQuestion() {
+  if (savingQuestion) return;   // 防重复点击
+  const title = document.getElementById('addQTitle').value.trim();
+  if (!title) { showToast('请输入问题内容'); return; }
+  const cat = document.getElementById('addQCat').value;
+  const answer = document.getElementById('addQAnswer').value.trim();
+  const thought = document.getElementById('addQThought').value.trim();
+  // 与已有问题重复则提示
+  if (userQuestions.some(x => x.title.trim() === title && x.cat === cat)) {
+    showToast('该问题已存在，未重复添加');
+    return;
+  }
+  savingQuestion = true;
+  const q = {title, cat, answer, thought};
+  userQuestions.push(q); saveToStorage('questions', userQuestions);
+  addHistory('添加问题', '添加了面试问题「'+title.substring(0,30)+'」');
+  renderAllQuestions(); closeAddQ();
+  showToast('✅ 问题已保存成功（共 '+userQuestions.length+' 道自定义问题）', 3200);
+  setTimeout(() => { savingQuestion = false; }, 500);
+}
+function deleteQuestion(qid) {
+  const idx = parseInt(qid.replace('uq_',''));
+  if (idx >= 0 && idx < userQuestions.length) {
+    const title = userQuestions[idx].title;
+    if (confirm('确定删除问题「'+title.substring(0,30)+'」吗？')) {
+      userQuestions.splice(idx, 1); saveToStorage('questions', userQuestions);
+      addHistory('删除问题', '删除了「'+title.substring(0,30)+'」');
+      renderAllQuestions(); showToast('问题已删除');
+    }
+  }
+}
+
+// ============ 项目 ============
+function renderUserProjects() {
+  const container = document.getElementById('userProjects');
+  container.innerHTML = userProjects.map((p, i) => '<div class="collapsible user-added" data-upid="'+i+'"><div class="collapsible-header" onclick="toggleCollapse(this)"><span>📋 自定义项目：'+(p.title||'未命名')+'</span><button class="proj-delete-btn" onclick="event.stopPropagation();deleteProject('+i+')">删除</button><span class="arrow">▶</span></div><div class="collapsible-body">'+(p.bg?'<div class="section-label">项目背景</div><div class="body-text editable" data-key="up'+i+'_bg">'+p.bg.replace(/\n/g,'<br>')+'</div>':'')+(p.role?'<div class="section-label">角色与职责</div><div class="body-text editable" data-key="up'+i+'_role">'+p.role.replace(/\n/g,'<br>')+'</div>':'')+(p.process?'<div class="section-label">执行过程</div><div class="body-text editable" data-key="up'+i+'_process">'+p.process.replace(/\n/g,'<br>')+'</div>':'')+(p.result?'<div class="highlight-box editable" data-key="up'+i+'_result">'+p.result.replace(/\n/g,'<br>')+'</div>':'')+'</div></div>').join('');
+  initEditable();
+}
+function addProject() { document.getElementById('addProjOverlay').classList.add('show'); ['addProjTitle','addProjBg','addProjRole','addProjProcess','addProjResult'].forEach(id => document.getElementById(id).value=''); }
+function closeAddProj() { document.getElementById('addProjOverlay').classList.remove('show'); }
+function saveNewProject() {
+  const title = document.getElementById('addProjTitle').value.trim();
+  if (!title) { showToast('请输入项目名称'); return; }
+  const p = {title, bg: document.getElementById('addProjBg').value.trim(), role: document.getElementById('addProjRole').value.trim(), process: document.getElementById('addProjProcess').value.trim(), result: document.getElementById('addProjResult').value.trim()};
+  userProjects.push(p); saveToStorage('projects', userProjects);
+  addHistory('添加项目', '添加了项目「'+title.substring(0,30)+'」');
+  renderUserProjects(); closeAddProj(); showToast('项目已添加 ✅');
+}
+function deleteProject(idx) {
+  const title = userProjects[idx].title;
+  if (confirm('确定删除项目「'+title.substring(0,30)+'」吗？')) {
+    userProjects.splice(idx, 1); saveToStorage('projects', userProjects);
+    addHistory('删除项目', '删除了「'+title.substring(0,30)+'」');
+    renderUserProjects(); showToast('项目已删除');
+  }
+}
+
+// ============ 岗位JD & 智能匹配 ============
+function renderJDs() {
+  const container = document.getElementById('jdList');
+  const empty = document.getElementById('jdEmpty');
+  renderJdSummary();
+  if (userJDs.length === 0) { container.innerHTML = ''; empty.style.display = ''; return; }
+  empty.style.display = 'none';
+  container.innerHTML = userJDs.map((jd, i) => {
+    const analysisHtml = jd.analysis ? renderJDAnalysisHTML(jd.analysis) : '';
+    return '<div class="card jd-card" id="jd-card-'+i+'" data-jdidx="'+i+'">'+
+      '<div class="card-title editable" data-key="jd_title_'+i+'">🎯 '+(jd.title||'未命名岗位')+'<span>'+(jd.time||'')+'</span></div>'+
+      // 折叠区：JD正文 + 操作 + 分析
+      '<div class="card-collapse-body">'+
+        '<div class="body-text editable" data-key="jd_'+i+'">'+jd.content.replace(/\n/g,'<br>')+'</div>'+
+        '<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap"><button class="analyze-btn" onclick="analyzeJD('+i+')">🔍 智能匹配分析</button><button class="tag" style="cursor:pointer;background:#FEE2E2;color:#DC2626" onclick="deleteJD('+i+')">🗑️ 删除</button></div>'+
+        analysisHtml+
+      '</div>'+
+      // 需求3+4：底部展开/收起条
+      '<div class="card-expand-bar" onclick="toggleCardExpand(this)"><span class="ceb-text">点击展开</span><span class="ceb-arrow">▼</span></div>'+
+    '</div>';
+  }).join('');
+  initEditable();
+}
+
+// 通用卡片展开/收起（展开条在卡片底部）
+function toggleCardExpand(bar) {
+  const card = bar.parentElement;
+  card.classList.toggle('open');
+  const txt = bar.querySelector('.ceb-text');
+  if (txt) txt.textContent = card.classList.contains('open') ? '点击收起' : '点击展开';
+}
+
+// JD 汇总卡片
+function renderJdSummary() {
+  const list = document.getElementById('jdSummaryList');
+  if (!list) return;
+  if (!userJDs.length) { list.innerHTML = '<div class="jd-sum-empty">还没有添加岗位，先在上方粘贴JD保存吧</div>'; return; }
+  list.innerHTML = userJDs.map((jd, i) => {
+    const score = jd.analysis ? jd.analysis.score + '%' : '';
+    return '<div class="jd-sum-item" onclick="jumpToJd('+i+')"><span class="js-idx">'+(i+1)+'</span><span class="js-title">'+(jd.title||'未命名岗位')+'</span>'+(score?'<span class="js-score">'+score+'</span>':'')+'<span class="js-arrow">›</span></div>';
+  }).join('');
+}
+function refreshJdSummary() {
+  renderJdSummary();
+  showToast('列表已刷新 ✅（共 '+userJDs.length+' 个岗位）');
+}
+function jumpToJd(idx) {
+  const card = document.getElementById('jd-card-'+idx);
+  if (card) {
+    // 若折叠则先展开
+    if (!card.classList.contains('open')) {
+      const bar = card.querySelector(':scope > .card-expand-bar');
+      if (bar) toggleCardExpand(bar);
+    }
+    card.scrollIntoView({behavior:'smooth', block:'start'});
+    card.style.transition = 'box-shadow .3s';
+    card.style.boxShadow = '0 0 0 2px var(--accent)';
+    setTimeout(() => { card.style.boxShadow = ''; }, 1500);
+  }
+}
+
+function openJdInput() {
+  document.getElementById('jdInput').value = '';
+  document.getElementById('jdTitleInput').value = '';
+  document.getElementById('jdAddOverlay').classList.add('show');
+  setTimeout(() => document.getElementById('jdTitleInput').focus(), 250);
+}
+function closeJdInput() { document.getElementById('jdAddOverlay').classList.remove('show'); }
+
+function saveJD() {
+  const content = document.getElementById('jdInput').value.trim();
+  if (!content) { showToast('请输入JD内容'); return; }
+  const title = document.getElementById('jdTitleInput').value.trim() || extractJDTitle(content);
+  const now = new Date();
+  const jd = {title, content, time: now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')};
+  userJDs.push(jd); saveToStorage('jds', userJDs);
+  addHistory('添加JD', '保存了岗位JD「'+title+'」');
+  closeJdInput();
+  renderJDs(); showToast('JD已保存 ✅');
+}
+
+function extractJDTitle(text) {
+  const m = text.match(/岗位名称[：:]\s*(.+)/) || text.match(/职位[：:]\s*(.+)/) || text.match(/^(.+?)(?:\n|$)/);
+  return m ? m[1].trim().substring(0,20) : '未命名岗位';
+}
+
+function deleteJD(idx) {
+  if (confirm('确定删除「'+userJDs[idx].title+'」吗？')) {
+    const title = userJDs[idx].title;
+    userJDs.splice(idx, 1); saveToStorage('jds', userJDs);
+    addHistory('删除JD', '删除了「'+title+'」');
+    renderJDs(); showToast('已删除');
+  }
+}
+
+// 从JD文本中提取关键词
+function extractJDKeywords(text) {
+  const matchedTags = [];
+  const lowered = text.toLowerCase();
+  for (const [tag, keywords] of Object.entries(JD_KEYWORDS)) {
+    for (const kw of keywords) {
+      if (lowered.includes(kw.toLowerCase())) { matchedTags.push(tag); break; }
+    }
+  }
+  return [...new Set(matchedTags)];
+}
+
+// 分析JD
+function analyzeJD(idx) {
+  const jd = userJDs[idx];
+  if (!jd) return;
+  
+  const jdTags = extractJDKeywords(jd.content);
+  if (jdTags.length === 0) {
+    showToast('未识别到明确的能力关键词，请检查JD内容');
+    return;
+  }
+  
+  // 获取工作经历数据库
+  const projects = buildExperienceDB();
+  
+  // 匹配项目
+  const matched = [];
+  const unmatched = [];
+  projects.forEach(p => {
+    const pTags = p.tags || [];
+    const overlap = pTags.filter(t => jdTags.includes(t));
+    if (overlap.length > 0) {
+      matched.push({...p, overlap, score: overlap.length});
+    } else {
+      unmatched.push(p);
+    }
+  });
+  matched.sort((a,b) => b.score - a.score);
+  
+  // 计算总体匹配度
+  const coverage = Math.round((matched.length / projects.length) * 100);
+  const score = Math.min(95, Math.max(40, Math.round(coverage * 0.8 + (jdTags.length * 5))));
+  
+  // 生成面试话术
+  const script = generateInterviewScript(jd, jdTags, matched, unmatched);
+  
+  // 生成详细自我介绍
+  const selfIntro = generateSelfIntro(jd, jdTags, matched);
+  
+  // 生成面试问题建议
+  const suggestedQuestions = generateSuggestedQuestions(jd, jdTags, matched, unmatched);
+  
+  // 保存分析结果
+  jd.analysis = {
+    score, jdTags, matched, unmatched, script, selfIntro, suggestedQuestions,
+    timestamp: new Date().toLocaleString()
+  };
+  saveToStorage('jds', userJDs);
+  addHistory('JD分析', '分析了「'+jd.title+'」岗位匹配度');
+  
+  renderJDs();
+  showToast('匹配分析完成 ✅');
+  
+  // 滚动到分析结果
+  setTimeout(() => {
+    const card = document.querySelector('.jd-card[data-jdidx="'+idx+'"] .jd-analysis');
+    if (card) card.scrollIntoView({behavior:'smooth', block:'start'});
+  }, 300);
+}
+
+// 构建工作经历数据库（从DOM中提取当前内容）
+function buildExperienceDB() {
+  const projects = [];
+  // 美团
+  projects.push({
+    title: '美团公共事务部综合运营',
+    company: '美团',
+    period: '2023.01 — 2025.06',
+    tags: ['活动统筹', '项目管理', '供应商管理', '跨部门协作', '政府关系', '内容运营', '数据分析', '流程优化', '文档沉淀'],
+    highlights: ['服贸会美团展区执行总负责人', '4场供应商招商会组织执行', '美团APP主题页搭建投放', '部门运营工具包建设']
+  });
+  // 亚马逊
+  projects.push({
+    title: '亚马逊客服中心Coach',
+    company: '亚马逊',
+    period: '2.5年',
+    tags: ['质检', '客服', '培训', '流程优化', '案例分析', '疑难处理', '数据分析', '文档沉淀'],
+    highlights: ['处理一线客服升级疑难case', '新人实操指导+成熟员工再培训', '总结共性问题优化流程迭代FAQ', '降低错误率与重复进线率']
+  });
+  // 服贸会
+  projects.push({
+    title: '服贸会美团展区活动执行',
+    company: '美团',
+    period: '2023/2025',
+    tags: ['活动统筹', '项目管理', '供应商管理', '跨部门协作', '政府关系'],
+    highlights: ['统筹10余条业务线联合参展', '端到端全流程管理', '沉淀checklist和人员手册SOP']
+  });
+  // 招商会
+  projects.push({
+    title: '美团供应商招商会',
+    company: '美团',
+    period: '2024年4场',
+    tags: ['活动统筹', '供应商管理', '政府关系', '跨部门协作'],
+    highlights: ['每场到场300+供应商', '促成约500家合作', '创新服装臂贴识别方案']
+  });
+  // APP主题页
+  projects.push({
+    title: '美团APP主题页搭建投放',
+    company: '美团',
+    period: '2023-2025',
+    tags: ['数据分析', '跨部门协作', '内容运营'],
+    highlights: ['牵头多条业务线整合促销方案', '投放搜索/猜喜/开屏资源位', '统计PV/UV/成交量复盘']
+  });
+  // 运营工具包
+  projects.push({
+    title: '部门运营工具包建设',
+    company: '美团',
+    period: '2023-2025',
+    tags: ['流程优化', '跨部门协作', '文档沉淀'],
+    highlights: ['沉淀业务协作通讯录', '建立拎包组织流程', '推动成为部门长期工作法']
+  });
+  // 采购
+  projects.push({
+    title: '物资/服务采购管理',
+    company: '美团',
+    period: '2023-2025',
+    tags: ['供应商管理'],
+    highlights: ['独立对接5+核心供应商', '完成合同签订及年度结算']
+  });
+  // 研究院运营
+  projects.push({
+    title: '研究院内部群发号运营',
+    company: '美团',
+    period: '2023-2025',
+    tags: ['内容运营'],
+    highlights: ['内容分层推送', '内部群发号阅读率提升4%']
+  });
+  
+  // 添加用户自定义项目
+  userProjects.forEach((p, i) => {
+    const tags = inferTagsFromText(p.title + ' ' + p.bg + ' ' + p.role + ' ' + p.process + ' ' + p.result);
+    projects.push({
+      title: p.title || '自定义项目'+(i+1),
+      company: '自定义',
+      period: '',
+      tags: tags.length ? tags : ['项目管理'],
+      highlights: [p.role, p.result].filter(Boolean),
+      userAdded: true
+    });
+  });
+  
+  return projects;
+}
+
+// 从文本推断标签
+function inferTagsFromText(text) {
+  if (!text) return [];
+  const tags = [];
+  const lowered = text.toLowerCase();
+  for (const [tag, keywords] of Object.entries(JD_KEYWORDS)) {
+    for (const kw of keywords) {
+      if (lowered.includes(kw.toLowerCase())) { tags.push(tag); break; }
+    }
+  }
+  return [...new Set(tags)];
+}
+
+// 生成面试话术
+function generateInterviewScript(jd, jdTags, matched, unmatched) {
+  const title = jd.title || '该岗位';
+  let script = '针对「'+title+'」岗位，我建议你这样介绍自己：<br><br>';
+  script += '「我看到这个岗位核心要求包括' + jdTags.slice(0,3).join('、') + '，这几点正好和我的经历高度匹配。<br><br>';
+  
+  if (matched.length > 0) {
+    const top = matched.slice(0, 2);
+    script += '第一，我在' + top[0].company + '做过「' + top[0].title + '」，主要锻炼了' + top[0].overlap.join('、') + '能力；';
+    if (top[1]) {
+      script += '第二，我在' + top[1].company + '的「' + top[1].title + '」经历，让我积累了' + top[1].overlap.join('、') + '经验。<br><br>';
+    } else {
+      script += '<br><br>';
+    }
+  }
+  
+  // 针对质检岗位特殊优化
+  if (jdTags.includes('质检') || jdTags.includes('客服')) {
+    script += '特别是亚马逊客服中心Coach的经历，我每天处理一线客服升级的疑难case，通过抽检case、总结共性问题、优化FAQ知识库来降低错误率，这和贵司质检岗位"依据标准抽检、分析问题、优化规则"的核心逻辑完全一致。<br><br>';
+  }
+  
+  // 差距点坦诚说明
+  const gapTags = jdTags.filter(t => !matched.some(m => m.overlap.includes(t)));
+  if (gapTags.length > 0) {
+    script += '需要补充的是，我在' + gapTags.slice(0,2).join('、') + '方面的直接经验相对较少，但我过往的项目管理思维和快速学习能力能让我快速补齐。<br><br>';
+  }
+  
+  script += '所以我认为这个岗位既能发挥我现有的' + (matched.length > 0 ? matched[0].overlap.join('、') : '项目管理和流程优化') + '优势，也能让我在' + title + '领域持续深耕。」';
+  return script;
+}
+
+// 生成详细自我介绍（2分钟版）
+function generateSelfIntro(jd, jdTags, matched) {
+  const title = jd.title || '该岗位';
+  let intro = '';
+  
+  // 开场：我是谁
+  intro += '<p><span class="hi-section">👋 开场（10秒）</span>';
+  intro += '面试官好，我叫XX，有6年互联网运营经验，先后在美团公共事务部和亚马逊客服中心工作过。今天想结合这个' + title + '岗位的要求，聊聊我的匹配点。</p>';
+  
+  // 主体：针对JD前3个核心要求逐一匹配
+  const topTags = jdTags.slice(0, 3);
+  const tagIntroMap = {
+    '质检': '我在亚马逊做客服中心Coach时，核心工作就是抽检一线客服的case质量、总结共性问题、优化FAQ知识库来降低错误率。这和贵司质检岗位"依据标准抽检、分析问题、优化规则"的逻辑完全一致。',
+    '客服': '在亚马逊2.5年的客服管理经验让我对客服体系有深刻理解——从一线case升级处理、到团队培训赋能、再到流程迭代优化，形成了完整的闭环思维。',
+    '培训': '我在亚马逊负责新人实操指导和成熟员工再培训，通过总结一线共性问题制作培训课件，形成了"发现问题→总结→培训→验证效果"的闭环。',
+    '流程优化': '我在美团搭建了部门运营工具包，把跨部门协作经验沉淀成SOP和checklist，推动了部门长期工作法的建立。在亚马逊也优化了一线操作流程，直接降低了错误率和重复进线率。',
+    '数据分析': '在美团做APP主题页投放时，我独立完成投放后的浏览量、成交量等数据统计和复盘汇报，有从数据中找洞察、驱动决策的实操经验。',
+    '跨部门协作': '美团APP主题页需要牵头小象、闪购、外卖等10余条业务线整合促销方案，我通过统一目标、标准化信息收集、进度透明和结果闭环四步法，高效推动了多方协作。',
+    '供应商管理': '在美团我独立对接5+核心供应商，完成布展招标、合同签订到年度结算的全流程，也组织过4场供应商招商会，每场到场300+人。',
+    '活动统筹': '服贸会美团展区是我最有代表性的统筹项目——作为执行总负责人，统筹10余条业务线联合参展，从会前Kickoff到撤场全流程管理，两届展会顺利执行并沉淀了SOP。',
+    '项目管理': '我习惯用项目管理思维拆解工作——服贸会、招商会、APP主题页、运营工具包，每个项目都遵循"目标→拆解→执行→复盘→沉淀"的闭环。',
+    '内容运营': '我在美团做过研究院内部群发号的运营，通过内容分层推送策略将阅读率提升了4%。',
+    '政府关系': '美团公共事务部3.5年经历让我积累了政企对接和公共事务的认知，服贸会本身就是政府高度关注的展会，我在执行中与多方政府对接有实战经验。',
+    '案例库': '在亚马逊我维护了FAQ知识库，持续迭代优化。在美团也搭建了运营工具包，沉淀了业务协作通讯录等案例库。',
+    '疑难处理': '在亚马逊我专门处理一线客服升级的疑难case，通过case分析、溯源问题、优化流程来从根本上降低升级率。',
+    '团队管理': '我在亚马逊作为Coach带领团队成长，负责新人指导和团队培训赋能，有带人实操经验。',
+    '文档沉淀': '我有很强的体系化沉淀能力——服贸会checklist和人员手册、部门运营工具包、FAQ知识库，都是我的代表作。'
+  };
+  
+  intro += '<p><span class="hi-section">🎯 核心匹配（90秒）</span>';
+  topTags.forEach((tag, i) => {
+    const text = tagIntroMap[tag] || ('在' + tag + '方面，我有相关的实战经验和系统化的方法论积累。');
+    intro += '<strong>' + (i+1) + '、' + tag + '：</strong>' + text + '<br><br>';
+  });
+  
+  // 收尾
+  intro += '<span class="hi-section">💪 收尾（20秒）</span>';
+  intro += '总结一下，我的核心优势是<strong>项目管理思维+体系化沉淀能力</strong>，擅长把复杂的多方协作拆解成可复用的流程。这也是我对' + title + '岗位很感兴趣的原因，希望能有机会深入交流。谢谢！</p>';
+  
+  return intro;
+}
+
+// 生成面试问题建议（5个）
+function generateSuggestedQuestions(jd, jdTags, matched, unmatched) {
+  const title = jd.title || '该岗位';
+  const topTags = jdTags.slice(0, 3);
+  const topMatched = matched.slice(0, 2);
+  const gapTags = jdTags.filter(t => !matched.some(m => m.overlap.includes(t)));
+  
+  const questions = [];
+  
+  // 问题1：项目经验类 - 核心匹配项目
+  if (topMatched.length > 0) {
+    const m = topMatched[0];
+    questions.push({
+      q: '你在' + m.company + '做「' + m.title + '」时，遇到的最大挑战是什么？你是如何解决的？',
+      hint: '用<strong>STAR法则</strong>回答：先说具体挑战场景，再说你采取的行动步骤，最后量化结果。重点突出' + m.overlap.slice(0,2).join('和') + '能力如何发挥作用。'
+    });
+  }
+  
+  // 问题2：项目经验类 - 与JD最相关的能力
+  if (topTags.length > 0) {
+    const tag = topTags[0];
+    const tagQMap = {
+      '质检': '请分享一次你通过质检发现问题并推动改进的经历。具体发现了什么问题，推动了什么改变，效果如何？',
+      '客服': '如果让你从0到1搭建一套客服质检体系，你会怎么设计？',
+      '培训': '请分享你做过的最成功的一次培训赋能案例。培训对象是谁，你用了什么方法，效果怎么衡量？',
+      '流程优化': '请分享一个你主动推动流程优化的案例。你如何发现痛点、设计方案、推动落地？',
+      '数据分析': '请分享一次你用数据分析驱动业务决策的经历。你用了什么数据，得出了什么结论，推动了什么变化？',
+      '跨部门协作': '跨部门推动一件事情时，遇到对方不配合怎么办？请举一个实际案例。',
+      '供应商管理': '请分享一次你处理供应商问题或纠纷的经历。你是怎么平衡各方利益的？',
+      '活动统筹': '大型活动执行中，最让你焦虑的一个时刻是什么？你当时怎么应对的？',
+      '项目管理': '请用STAR法则介绍一个你从0到1负责的项目。重点讲你的角色和推动节奏。',
+      '内容运营': '请分享一个你通过内容策略提升用户活跃度的案例。你的策略逻辑和数据结果是什么？',
+      '政府关系': '请分享一次你在政府对接中处理突发情况的经历。',
+      '案例库': '请分享你是如何搭建和维护知识库/案例库的，有什么方法论？',
+      '疑难处理': '请分享一次你处理最棘手的case的经历。你是怎么一步步拆解和解决的？',
+      '团队管理': '请分享一次你带领团队克服困难完成目标的经历。',
+      '文档沉淀': '请分享你做过的最有价值的一次文档沉淀，它带来了什么长期影响？'
+    };
+    questions.push({
+      q: tagQMap[tag] || '请分享一个最能体现你' + tag + '能力的项目经历。',
+      hint: '用<strong>具体案例</strong>回答，不要空谈方法论。结构：背景→你的角色→关键行动→结果。如果结果可量化更好。'
+    });
+  }
+  
+  // 问题3：能力素养类 - 软技能
+  const softSkills = jdTags.filter(t => ['跨部门协作','流程优化','项目管理','文档沉淀'].includes(t));
+  if (softSkills.length > 0) {
+    const skill = softSkills[0];
+    const skillQMap = {
+      '跨部门协作': '不同部门的目标和优先级往往不一致，你是如何在这种情况下推动事情落地的？',
+      '流程优化': '当你发现一个现有流程效率很低但大家已经习惯了，你会怎么推动改变？',
+      '项目管理': '多项目并行时，你如何做优先级排序和时间管理？请分享你的方法论。',
+      '文档沉淀': '很多同学觉得写文档浪费时间，你怎么看这个问题？你是怎么确保文档被真正用起来的？'
+    };
+    questions.push({
+      q: skillQMap[skill] || '你认为做好' + title + '这个岗位，最关键的软技能是什么？为什么？',
+      hint: '回答时先给出<strong>你的方法论框架</strong>，再用一个<strong>真实案例</strong>佐证。面试官想听的是你的思维方式，不只是结果。'
+    });
+  } else {
+    questions.push({
+      q: '你觉得做好' + title + '这个岗位，最核心的能力是什么？请用你的经历来证明。',
+      hint: '从JD中提炼<strong>2-3个核心能力</strong>，每个能力用一个简短经历证明。最后总结为什么你适合这个岗位。'
+    });
+  }
+  
+  // 问题4：能力素养类 - 学习与适应
+  questions.push({
+    q: '请分享一次你快速学习一个新领域并应用到工作中的经历。',
+    hint: '用<strong>"学什么→为什么学→怎么学→怎么用→什么效果"</strong>五步法回答。重点展示你的学习能力和迁移能力。'
+  });
+  
+  // 问题5：差距/挑战类
+  if (gapTags.length > 0) {
+    questions.push({
+      q: '你之前在' + gapTags.slice(0,2).join('、') + '方面的直接经验不多，你打算如何快速补上？',
+      hint: '坦诚承认差距，然后展示你的<strong>学习计划</strong>：①已有的可迁移能力 ②具体学习路径 ③预期上手时间。让面试官看到你的成长思维。'
+    });
+  } else {
+    questions.push({
+      q: '如果入职后你发现实际工作和你预期的不一样，你会怎么应对？',
+      hint: '展示你的<strong>适应力和韧性</strong>：先充分理解现状→找到切入点→小步快跑验证→逐步扩大影响范围。'
+    });
+  }
+  
+  return questions;
+}
+
+// 渲染分析结果HTML
+function renderJDAnalysisHTML(a) {
+  if (!a) return '';
+  let matchedHtml = a.matched.length ? a.matched.map(m => '<li><strong>'+m.title+'</strong>：匹配 '+m.overlap.join('、')+'</li>').join('') : '<li>暂无明显匹配项目</li>';
+  let gapHtml = a.unmatched.length ? a.unmatched.slice(0,2).map(m => '<li>'+m.title+'（可补充说明迁移能力）</li>').join('') : '<li>无明显差距</li>';
+  
+  // 自我介绍模块
+  let selfIntroHtml = '';
+  if (a.selfIntro) {
+    selfIntroHtml = '<div class="jd-analysis-section"><div class="jd-analysis-section-title">🎙️ 自我介绍话术</div><div class="jd-selfintro editable" data-key="jd_selfintro_'+a.timestamp+'">'+a.selfIntro+'</div></div>';
+  }
+  
+  // 面试问题建议模块
+  let questionsHtml = '';
+  if (a.suggestedQuestions && a.suggestedQuestions.length > 0) {
+    questionsHtml = '<div class="jd-analysis-section"><div class="jd-analysis-section-title">💡 面试问题建议（5题）</div>'+
+      a.suggestedQuestions.map((sq, i) => 
+        '<div class="jd-suggest-q"><div class="sq-title"><span class="sq-num">'+(i+1)+'</span><span>'+sq.q+'</span></div><div class="sq-hint">💭 <strong>答题思路：</strong>'+sq.hint+'</div></div>'
+      ).join('')+'</div>';
+  }
+  
+  return '<div class="jd-analysis"><div class="jd-analysis-title">📊 智能匹配分析</div>'+
+    '<div class="jd-match-score"><div class="jd-score-bar"><div class="jd-score-fill" style="width:'+a.score+'%"></div></div><div class="jd-score-text">'+a.score+'%</div></div>'+
+    '<div class="jd-analysis-section"><div class="jd-analysis-section-title">🎯 JD核心要求</div><div class="tag-list">'+a.jdTags.map(t => '<span class="tag tag-blue">'+t+'</span>').join('')+'</div></div>'+
+    '<div class="jd-analysis-section"><div class="jd-analysis-section-title">✅ 匹配经历</div><ul>'+matchedHtml+'</ul></div>'+
+    '<div class="jd-analysis-section"><div class="jd-analysis-section-title">⚠️ 需补充的差距</div><ul>'+gapHtml+'</ul></div>'+
+    '<div class="jd-analysis-section"><div class="jd-analysis-section-title">🎤 面试话术建议</div><div class="jd-script editable" data-key="jd_script_'+a.timestamp+'">'+a.script+'</div></div>'+
+    selfIntroHtml + questionsHtml +
+    '</div>';
+}
+
+// ============ 历史面板关闭（点击背景） ============
+document.getElementById('historyPanel').addEventListener('click', function(e) { if (e.target === this) closeHistory(); });
+document.getElementById('syncOverlay').addEventListener('click', function(e) { if (e.target === this) closeSync(); });
+
+// ============ 云同步（多设备数据一致） ============
+const SYNC_API = 'https://jsonblob.com/api/jsonBlob';
+function openSync() {
+  document.getElementById('syncOverlay').classList.add('show');
+  const saved = localStorage.getItem('iw_sync_code');
+  document.getElementById('syncCodeInput').value = saved || '';
+  document.getElementById('syncStatus').textContent = saved ? '当前绑定同步码：' + saved : '尚未绑定同步码';
+}
+function closeSync() { document.getElementById('syncOverlay').classList.remove('show'); }
+// 这些 key 不参与云同步（程序文件本身、同步码）
+const SYNC_EXCLUDE = ['iw_sync_code', 'iw_app_html', 'iw_app_ver'];
+function collectSyncData() {
+  const data = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k.startsWith('iw_') && SYNC_EXCLUDE.indexOf(k) === -1) data[k] = localStorage.getItem(k);
+  }
+  data.iw_sync_time = new Date().toLocaleString();
+  return data;
+}
+function applySyncData(data) {
+  let count = 0;
+  Object.keys(data).forEach(k => {
+    if (k.startsWith('iw_') && SYNC_EXCLUDE.indexOf(k) === -1) { localStorage.setItem(k, data[k]); count++; }
+  });
+  return count;
+}
+async function pushSync() {
+  const status = document.getElementById('syncStatus');
+  let code = document.getElementById('syncCodeInput').value.trim();
+  status.textContent = '⏳ 正在上传...';
+  try {
+    const data = JSON.stringify(collectSyncData());
+    if (!code) {
+      // 首次：创建新云端存储
+      const resp = await fetch(SYNC_API, {method:'POST', headers:{'Content-Type':'application/json'}, body: data});
+      if (!resp.ok) throw new Error('创建失败');
+      const loc = resp.headers.get('Location') || resp.headers.get('location');
+      code = loc.split('/').pop();
+    } else {
+      const resp = await fetch(SYNC_API + '/' + code, {method:'PUT', headers:{'Content-Type':'application/json'}, body: data});
+      if (!resp.ok) throw new Error('上传失败');
+    }
+    localStorage.setItem('iw_sync_code', code);
+    document.getElementById('syncCodeInput').value = code;
+    status.innerHTML = '✅ 上传成功！同步码：<strong style="color:var(--accent);user-select:all">' + code + '</strong>（长按复制，在Mac上粘贴使用）';
+    showToast('已上传到云端 ✅');
+  } catch(e) {
+    status.textContent = '❌ 上传失败，请检查网络后重试';
+  }
+}
+async function pullSync() {
+  const status = document.getElementById('syncStatus');
+  const code = document.getElementById('syncCodeInput').value.trim();
+  if (!code) { status.textContent = '请先粘贴同步码'; return; }
+  status.textContent = '⏳ 正在下载...';
+  try {
+    const resp = await fetch(SYNC_API + '/' + code + '?t=' + Date.now(), {cache:'no-store'});
+    if (!resp.ok) throw new Error('下载失败');
+    const data = await resp.json();
+    const count = applySyncData(data);
+    localStorage.setItem('iw_sync_code', code);
+    status.textContent = '✅ 同步成功！共导入 ' + count + ' 项数据（云端时间：' + (data.iw_sync_time||'未知') + '），即将刷新页面...';
+    showToast('同步成功 ✅');
+    setTimeout(() => location.reload(), 1500);
+  } catch(e) {
+    status.textContent = '❌ 下载失败，请检查同步码是否正确';
+  }
+}
+
+// ============ 初始化 ============
+function init() {
+  userQuestions = loadFromStorage('questions', []);
+  userProjects = loadFromStorage('projects', []);
+  userJDs = loadFromStorage('jds', []);
+  editHistory = loadFromStorage('history', []);
+  loadTabConfig();
+  loadCatConfig();
+  // 加载工作台名称
+  const savedName = loadFromStorage('ws_name', null);
+  if (savedName) document.getElementById('wsName').textContent = savedName;
+  const savedSub = loadFromStorage('ws_sub', null);
+  if (savedSub) document.getElementById('wsSub').textContent = savedSub;
+  // 初始化各 tab 编辑状态
+  tabConfig.forEach(t => { tabEditStates[t.key] = false; });
+  renderTabs();
+  renderQaFilter();
+  renderAddQCatSelect();
+  renderAllQuestions();
+  renderUserProjects();
+  renderJDs();
+  initEditable();
+  applyTabEditUI();
+  // 底部导航绑定
+  document.querySelectorAll('.nav-item').forEach(n => n.addEventListener('click', () => switchTab(n.dataset.tab)));
+  // 弹窗背景关闭
+  ['tabMgrOverlay','promptOverlay'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', function(e) { if (e.target === this) { id==='tabMgrOverlay'?closeTabManager():closePrompt(); } });
+  });
+}
+init();
+</script>
+</body>
+</html>
