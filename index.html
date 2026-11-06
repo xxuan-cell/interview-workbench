@@ -10,14 +10,15 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{--primary:#FFD100;--primary-dark:#E6BC00;--secondary:#2C3E50;--accent:#FF6B35;--bg:#F5F6FA;--card-bg:#FFFFFF;--text-main:#1A1A2E;--text-sub:#6B7280;--text-light:#9CA3AF;--border:#E5E7EB;--success:#10B981;--info:#3B82F6;--radius:12px}
 body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue',sans-serif;background:var(--bg);color:var(--text-main);line-height:1.6;padding-bottom:90px;-webkit-font-smoothing:antialiased}
-.header{position:sticky;top:0;z-index:100;background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);color:var(--secondary);padding:44px 16px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.08);display:flex;justify-content:space-between;align-items:flex-end}
-.header h1{font-size:20px;font-weight:700;margin-bottom:4px}
-.header p{font-size:12px;opacity:0.8}
+.header{position:sticky;top:0;z-index:100;background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);color:var(--secondary);padding:44px 16px 12px;box-shadow:0 2px 12px rgba(0,0,0,0.08);display:flex;flex-direction:column;gap:8px}
+.header h1{font-size:20px;font-weight:700;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.header p{font-size:12px;opacity:0.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .header .ws-name{cursor:pointer;position:relative;display:inline-flex;align-items:center;gap:4px}
 .header .ws-name::after{content:'✎';font-size:12px;opacity:0;transition:opacity .15s}
 body.edit-mode .header .ws-name::after{opacity:.6}
 .header .ws-sub{cursor:pointer}
-.header-btns{display:flex;gap:6px}
+.header-btns{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.header-btns::-webkit-scrollbar{display:none}
 .hbtn{font-size:10px;background:var(--secondary);color:var(--primary);border:none;padding:6px 10px;border-radius:20px;font-weight:700;cursor:pointer;white-space:nowrap}
 .hbtn.active{background:#fff;color:var(--accent)}
 /* Tab 内编辑栏 */
@@ -52,10 +53,8 @@ body.edit-mode .custom-card .cc-del{display:block}
 .card-title:has(.jd-refresh-btn){padding-right:0}
 .card-title .jd-refresh-btn{margin-left:auto}
 /* 卡片级编辑按钮（醒目版） */
-.card-edit-btn{position:absolute;top:10px;right:10px;z-index:6;font-size:11px;background:#FFF3E0;color:#E65100;border:1px solid #FFCC80;padding:4px 9px;border-radius:12px;font-weight:700;cursor:pointer;line-height:1.4;box-shadow:0 1px 3px rgba(230,81,0,.15)}
-.card-edit-btn::after{content:'编辑'}
+.card-edit-btn{position:absolute;top:8px;right:8px;z-index:20;font-size:12px;background:#FFF3E0;color:#E65100;border:1px solid #FFB74D;padding:4px 10px;border-radius:12px;font-weight:700;cursor:pointer;line-height:1.3;box-shadow:0 1px 4px rgba(230,81,0,.25);white-space:nowrap;font-family:inherit}
 .card-edit-btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
-.card-edit-btn.on::after{content:'完成'}
 .card.card-editing{box-shadow:0 0 0 2px var(--accent),0 2px 8px rgba(255,107,53,0.15)}
 .card.card-editing .editable{border:1px dashed rgba(255,107,53,0.5);border-radius:4px;padding:1px 3px;margin:-1px -3px}
 .card .collapsible .card-edit-btn{display:none}
@@ -111,7 +110,7 @@ body.edit-mode .custom-card .cc-del{display:block}
 .collapsible > .card-expand-bar{margin-top:0;padding:11px 0;background:#FCFCFD}
 @keyframes slideDown{from{opacity:0;max-height:0}to{opacity:1;max-height:3000px}}
 .q-card{background:var(--card-bg);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05);position:relative}
-.q-header{padding:14px 16px;background:linear-gradient(135deg,#FFF8E1 0%,#FFFDE7 100%);display:flex;gap:10px;align-items:flex-start;cursor:pointer;padding-right:66px}
+.q-header{padding:14px 14px;background:linear-gradient(135deg,#FFF8E1 0%,#FFFDE7 100%);display:flex;gap:8px;align-items:center;cursor:pointer}
 .q-num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--secondary);color:var(--primary);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
 .q-title{font-size:14px;font-weight:600;color:var(--text-main);line-height:1.5;flex:1}
 .q-tags{display:flex;gap:6px;margin-top:6px}
@@ -527,9 +526,24 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
   </div>
 </div>
 
+<!-- ===== 自定义确认弹窗（替代原生 confirm，解决 PWA 模式下不弹出） ===== -->
+<div class="edit-overlay" id="confirmOverlay">
+  <div class="panel"><h3 id="confirmTitle">确认</h3>
+    <div id="confirmMsg" style="font-size:13px;color:var(--text-sub);line-height:1.8;margin-bottom:14px;white-space:pre-wrap"></div>
+    <div class="panel-actions">
+      <button class="btn-cancel" onclick="closeConfirm(false)">取消</button>
+      <button class="btn-save" id="confirmOkBtn" onclick="closeConfirm(true)">确定</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== 云同步弹窗 ===== -->
 <div class="edit-overlay" id="syncOverlay">
-  <div class="panel"><h3>☁️ 数据同步（手机 ↔ Mac 内容互通）</h3>
+  <div class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h3 style="margin:0;font-size:15px;color:var(--secondary)">☁️ 数据同步（手机 ↔ Mac）</h3>
+      <button style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-light);line-height:1;padding:0 4px" onclick="closeSync()">✕</button>
+    </div>
     <div style="font-size:12px;background:#FFF8E1;border-left:3px solid var(--primary);padding:8px 10px;border-radius:0 6px 6px 0;color:var(--text-sub);line-height:1.7;margin-bottom:12px">
       ⚠️ <strong>这不是升级App。</strong>这里只负责搬运你填的<strong>内容</strong>（简历、JD、问答等）。<br>
       想升级界面和功能，请点顶部的「🔄 升级App」。
@@ -540,7 +554,6 @@ body.edit-mode .collapsible.user-added .collapsible-header .arrow{margin-right:4
     <input id="syncCodeInput" placeholder="粘贴同步码（第一次使用可留空）">
     <div id="syncStatus" style="font-size:12px;color:var(--text-light);margin-bottom:8px;min-height:18px"></div>
     <div class="panel-actions">
-      <button class="btn-cancel" onclick="closeSync()">关闭</button>
       <button class="btn-save" onclick="pullSync()" style="background:#3B82F6">⬇️ 从云端下载</button>
       <button class="btn-save" onclick="pushSync()">⬆️ 上传到云端</button>
     </div>
@@ -664,8 +677,8 @@ const DEFAULT_CATS = [
 let catConfig = [];
 
 // ============ 版本与在线更新 ============
-const APP_VERSION = '5.4';
-const APP_TAG = 'v5.4';  // 当前发布标签，发新版时同步更新
+const APP_VERSION = '5.5';
+const APP_TAG = 'v5.5';  // 当前发布标签，发新版时同步更新
 const REPO = 'xxuan-cell/interview-workbench';
 
 // 多源候选：按可靠性排序，逐个尝试
@@ -843,12 +856,13 @@ function showVersionInfo() {
   const info = '📱 当前运行版本：v' + APP_VERSION + '\n' +
     '💾 本地已缓存版本：' + (hasCache ? ('v' + cached) : '无（使用艾可秀上的文件）') + '\n\n' +
     '「本地缓存版本」是升级后存在手机上的新版，打开 app 时优先加载它，所以重启不会退回旧版。';
-  if (confirm(info + '\n\n是否清除本地缓存版本？（仅用于升级出问题时回退，会丢失已升级的功能）')) {
+  openConfirm(info + '\n\n是否清除本地缓存版本？（仅用于升级出问题时回退，会丢失已升级的功能）', function(ok) {
+    if (!ok) return;
     localStorage.removeItem('iw_app_html');
     localStorage.removeItem('iw_app_ver');
     showToast('已清除本地缓存版本，即将重新加载');
     setTimeout(() => location.replace(location.pathname + '?r=' + Date.now()), 900);
-  }
+  }, {title: 'ℹ️ 版本信息', okText: '清除缓存版本'});
 }
 function closeHistory() { document.getElementById('historyPanel').classList.remove('show'); }
 function filterHistory(type, btn) {
@@ -864,9 +878,10 @@ function renderHistory() {
   list.innerHTML = filtered.map(h => '<div class="history-item"><div class="hi-time">'+h.time+'</div><span class="hi-action">'+h.action+'</span><div class="hi-detail">'+h.detail+'</div></div>').join('');
 }
 function clearHistory() {
-  if (confirm('确定清空所有历史记录吗？')) {
+  openConfirm('确定清空所有历史记录吗？', function(ok) {
+    if (!ok) return;
     editHistory = []; saveToStorage('history', []); renderHistory(); showToast('历史已清空');
-  }
+  }, {title: '清空历史记录', okText: '清空'});
 }
 
 // ============ 存储 ============
@@ -909,11 +924,13 @@ function injectCardEditBtns() {
     const btn = document.createElement('button');
     btn.className = 'card-edit-btn';
     btn.type = 'button';
+    btn.textContent = '✏️ 编辑';
     btn.onclick = function(ev) {
       ev.stopPropagation();
       card.classList.toggle('card-editing');
       const on = card.classList.contains('card-editing');
       btn.classList.toggle('on', on);
+      btn.textContent = on ? '✅ 完成' : '✏️ 编辑';
       if (on) showToast('已开启本卡片编辑，点文字即可修改');
     };
     card.appendChild(btn);
@@ -927,14 +944,19 @@ function injectCardEditBtns() {
     const btn = document.createElement('button');
     btn.className = 'card-edit-btn q-card-edit-btn';
     btn.type = 'button';
+    btn.style.position = 'static';
+    btn.style.flexShrink = '0';
+    btn.style.marginLeft = '4px';
+    btn.textContent = '✏️ 编辑';
     btn.onclick = function(ev) {
       ev.stopPropagation();
       card.classList.toggle('card-editing');
       const on = card.classList.contains('card-editing');
       btn.classList.toggle('on', on);
+      btn.textContent = on ? '✅ 完成' : '✏️ 编辑';
       if (on) { card.classList.add('open'); showToast('已开启本问题编辑'); }
     };
-    card.appendChild(btn);
+    header.appendChild(btn);
   });
   // 折叠面板（项目卡片）：需求4 - 展开条移到底部，编辑按钮放右上角
   document.querySelectorAll('.collapsible').forEach(card => {
@@ -946,11 +968,13 @@ function injectCardEditBtns() {
     const btn = document.createElement('button');
     btn.className = 'card-edit-btn collapsible-edit-btn';
     btn.type = 'button';
+    btn.textContent = '✏️ 编辑';
     btn.onclick = function(ev) {
       ev.stopPropagation();
       card.classList.toggle('editing');
       const on = card.classList.contains('editing');
       btn.classList.toggle('on', on);
+      btn.textContent = on ? '✅ 完成' : '✏️ 编辑';
       if (on) card.classList.add('open');
     };
     card.appendChild(btn);
@@ -980,23 +1004,24 @@ function injectCardEditBtns() {
 
 // ============ 工作台名称自定义 ============
 function editWsName() {
-  if (!editMode) { openPrompt('修改工作台名称', document.getElementById('wsName').textContent, saveWsName); return; }
-  openPrompt('修改工作台名称', document.getElementById('wsName').textContent, saveWsName);
+  openPrompt('修改工作台名称（最多16字）', document.getElementById('wsName').textContent, saveWsName, 16);
 }
 function saveWsName(val) {
   if (!val) return;
+  if (val.length > 16) val = val.substring(0, 16);
   document.getElementById('wsName').textContent = val;
   saveToStorage('ws_name', val);
   addHistory('修改名称', '工作台改名为「'+val+'」');
   showToast('名称已更新 ✅');
 }
 function editWsSub() {
-  openPrompt('修改副标题', document.getElementById('wsSub').textContent, function(val) {
+  openPrompt('修改副标题（最多16字）', document.getElementById('wsSub').textContent, function(val) {
     if (!val) return;
+    if (val.length > 16) val = val.substring(0, 16);
     document.getElementById('wsSub').textContent = val;
     saveToStorage('ws_sub', val);
     showToast('副标题已更新 ✅');
-  });
+  }, 16);
 }
 
 // ============ 编辑弹窗（支持卡片级/板块级） ============
@@ -1035,13 +1060,14 @@ function resetOneField() {
   closeEdit(); showToast('已恢复 ✅');
 }
 function resetAllData() {
-  if (confirm('确定恢复全部原始内容吗？你修改过的文字、添加的问题/项目/JD都会被清空。')) {
+  openConfirm('确定恢复全部原始内容吗？你修改过的文字、添加的问题/项目/JD都会被清空。', function(ok) {
+    if (!ok) return;
     const keys = [];
-    for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith('iw_')) keys.push(k); }
+    for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith('iw_') && k !== 'iw_app_html' && k !== 'iw_app_ver') keys.push(k); }
     keys.forEach(k => localStorage.removeItem(k));
     userQuestions = []; userProjects = []; userJDs = []; editHistory = [];
     location.reload();
-  }
+  }, {title: '恢复全部原始内容', okText: '确认恢复'});
 }
 
 // ============ 原始内容 ============
@@ -1276,11 +1302,13 @@ function renameTabItem(idx) {
 function deleteTabItem(idx) {
   const t = tabConfig[idx];
   if (t.builtin) { showToast('内置板块不可删除'); return; }
-  if (!confirm('确定删除板块「'+t.name+'」及其全部内容吗？')) return;
-  localStorage.removeItem('iw_card_' + t.key);
-  tabConfig.splice(idx, 1);
-  saveTabs(); renderTabMgrList(); renderTabs();
-  showToast('板块已删除');
+  openConfirm('确定删除板块「'+t.name+'」及其全部内容吗？', function(ok) {
+    if (!ok) return;
+    localStorage.removeItem('iw_card_' + t.key);
+    tabConfig.splice(idx, 1);
+    saveTabs(); renderTabMgrList(); renderTabs();
+    showToast('板块已删除');
+  }, {title: '删除板块', okText: '删除'});
 }
 function addCustomTab() {
   openPrompt('新增板块名称', '', function(val) {
@@ -1297,13 +1325,35 @@ function addCustomTab() {
 
 // ============ 通用输入弹窗 ============
 let promptCallback = null;
-function openPrompt(title, defaultValue, cb) {
+let promptMaxLen = 0;
+function openPrompt(title, defaultValue, cb, maxLen) {
   promptCallback = cb;
+  promptMaxLen = maxLen || 0;
   document.getElementById('promptTitle').textContent = title;
   const inp = document.getElementById('promptInput');
   inp.value = defaultValue || '';
+  inp.maxLength = maxLen || 524288;
   document.getElementById('promptOverlay').classList.add('show');
   setTimeout(() => { inp.focus(); inp.select(); }, 200);
+}
+
+// 自定义确认框（PWA 全屏模式下 confirm() 会被 iOS 屏蔽，必须用 DOM 弹窗）
+let confirmCallback = null;
+function openConfirm(msg, cb, opt) {
+  opt = opt || {};
+  confirmCallback = cb;
+  document.getElementById('confirmTitle').textContent = opt.title || '请确认';
+  document.getElementById('confirmMsg').textContent = msg;
+  const ok = document.getElementById('confirmOkBtn');
+  ok.textContent = opt.okText || '确定';
+  ok.style.background = opt.danger === false ? '' : '#DC2626';
+  document.getElementById('confirmOverlay').classList.add('show');
+}
+function closeConfirm(result) {
+  document.getElementById('confirmOverlay').classList.remove('show');
+  const cb = confirmCallback;
+  confirmCallback = null;
+  if (cb) cb(result);
 }
 function closePrompt() { document.getElementById('promptOverlay').classList.remove('show'); promptCallback = null; }
 function confirmPrompt() {
@@ -1459,11 +1509,12 @@ function deleteQuestion(qid) {
   const idx = parseInt(qid.replace('uq_',''));
   if (idx >= 0 && idx < userQuestions.length) {
     const title = userQuestions[idx].title;
-    if (confirm('确定删除问题「'+title.substring(0,30)+'」吗？')) {
+    openConfirm('确定删除问题「'+title.substring(0,30)+'」吗？', function(ok) {
+      if (!ok) return;
       userQuestions.splice(idx, 1); saveToStorage('questions', userQuestions);
       addHistory('删除问题', '删除了「'+title.substring(0,30)+'」');
       renderAllQuestions(); showToast('问题已删除');
-    }
+    }, {title: '删除问题', okText: '删除'});
   }
 }
 
@@ -1485,11 +1536,12 @@ function saveNewProject() {
 }
 function deleteProject(idx) {
   const title = userProjects[idx].title;
-  if (confirm('确定删除项目「'+title.substring(0,30)+'」吗？')) {
+  openConfirm('确定删除项目「'+title.substring(0,30)+'」吗？', function(ok) {
+    if (!ok) return;
     userProjects.splice(idx, 1); saveToStorage('projects', userProjects);
     addHistory('删除项目', '删除了「'+title.substring(0,30)+'」');
     renderUserProjects(); showToast('项目已删除');
-  }
+  }, {title: '删除项目', okText: '删除'});
 }
 
 // ============ 岗位JD & 智能匹配 ============
@@ -1579,12 +1631,14 @@ function extractJDTitle(text) {
 }
 
 function deleteJD(idx) {
-  if (confirm('确定删除「'+userJDs[idx].title+'」吗？')) {
+  const _jdTitle = userJDs[idx].title;
+  openConfirm('确定删除「'+_jdTitle+'」吗？', function(ok) {
+    if (!ok) return;
     const title = userJDs[idx].title;
     userJDs.splice(idx, 1); saveToStorage('jds', userJDs);
     addHistory('删除JD', '删除了「'+title+'」');
-    renderJDs(); showToast('已删除');
-  }
+    renderJDs(); showToast('JD 已删除');
+  }, {title: '删除岗位JD', okText: '删除'});
 }
 
 // 从JD文本中提取关键词
